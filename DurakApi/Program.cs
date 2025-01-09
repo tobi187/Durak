@@ -25,8 +25,6 @@ try {
     builder.Services.AddSwaggerGen();
     builder.Services.AddSignalR();
 
-    builder.Services.AddAuthentication();
-
     var app = builder.Build();
 
     // Configure the HTTP request pipeline.
