@@ -2,14 +2,11 @@
 {
     public class Room
     {
-        public Guid Id {  get; private set; }
+        public Guid Id {  get; private set; } = Guid.NewGuid();
+        public string Name { get; set; }
         public List<User> Users { get; set; } = [];
         public bool IsPlaying { get; private set; } = false;
 
-        public Room() 
-        { 
-            Id = Guid.NewGuid();
-        }
 
         public bool CanPlay => Users.Count > 1;
     }
