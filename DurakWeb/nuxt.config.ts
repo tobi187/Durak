@@ -4,6 +4,6 @@ export default defineNuxtConfig({
     devtools: { enabled: true },
     modules: ['@nuxt/devtools', '@nuxt/ui'],
     runtimeConfig: {
-        url: 'http://localhost:5281',
+        url: 'https://localhost:7175',
     },
 })
