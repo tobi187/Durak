@@ -1,3 +1,5 @@
+import { User } from '~/types/api'
+
 export default defineEventHandler(async (event) => {
     const cfg = useRuntimeConfig()
 
@@ -10,14 +12,13 @@ export default defineEventHandler(async (event) => {
     let result = null
 
     try {
-        result = await $fetch(`${cfg.url}/api/user/create`, {
+        result = await $fetch<User>(`${cfg.url}/api/user/create`, {
             query: {
                 userName: userName,
             },
         })
-        // result = await fetch(`${cfg.url}/api/user/create?userName=${userName}`)
     } catch (ex) {
-        console.log(ex)
+        console.log('rawr', ex)
     }
 
     return result

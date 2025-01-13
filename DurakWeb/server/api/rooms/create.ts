@@ -1,8 +1,7 @@
-import { useStore } from '~/composables/useStore'
-
 export default defineEventHandler(async (event) => {
     const cfg = useRuntimeConfig()
-    const { userState } = useStore()
+
+    debugger
 
     const query = getQuery(event)
     let roomName = query.roomName
@@ -10,15 +9,7 @@ export default defineEventHandler(async (event) => {
         roomName = undefined
     }
 
-    console.log({
-        query: {
-            roomName: roomName,
-        },
-        body: {
-            id: userState.userId,
-            username: userState.userName,
-        },
-    })
+    debugger
 
     let result = null
 
@@ -28,10 +19,7 @@ export default defineEventHandler(async (event) => {
             query: {
                 roomName: roomName,
             },
-            body: {
-                id: userState.userId,
-                username: userState.userName,
-            },
+            body: await readBody(event),
         })
     } catch (ex) {
         console.log(ex)
