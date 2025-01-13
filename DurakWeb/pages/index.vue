@@ -34,10 +34,10 @@ const roomName = ref('')
 
 const addUser = async () => {
   const user = await useFetch('/api/users/create', {
-      query: {
-        userName: userName.value
-      }
+    query: {
+      userName: userName.value
     }
+  }
   )
   if (user.error) {
     return false
@@ -53,9 +53,18 @@ const createRoom = async () => {
       return
     }
   }
-  const room = useFetch('/api/rooms/create', {
-    
+  const { data, error } = useFetch('/api/rooms/create', {
+    query: {
+      roomName: roomName.value
+    }
   })
+
+  if (error.value) {
+    console.log(error)
+    return
+  }
+  console.log(data.value)
+  alert(data.value)
 }
 
 </script>
