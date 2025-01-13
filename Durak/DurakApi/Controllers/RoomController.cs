@@ -24,9 +24,23 @@ namespace DurakApi.Controllers
             var room = new Room();
             room.Users = [user];
             room.Name = roomName ?? Guid.NewGuid().ToString();
-            _context.Rooms.Add(room);
+            await _context.Rooms.AddAsync(room);
             var rowsChanged = await _context.SaveChangesAsync();
             if (rowsChanged == 0)
+                return BadRequest();
+            return Ok(room.Id);
+        }
+
+        [HttpPost("Join")]
+        public async Task<ActionResult<Guid>> Join(string roomId, User user)
+        {
+            var room = await _context.Rooms.FindAsync(roomId);
+            if (room == null)
+                return BadRequest();
+            room.Users.Add(user);
+            _context.Rooms.Update(room);
+            var res = await _context.SaveChangesAsync();
+            if (res < 1)
                 return BadRequest();
             return Ok(room.Id);
         }
