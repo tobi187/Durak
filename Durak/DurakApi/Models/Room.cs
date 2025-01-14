@@ -4,7 +4,6 @@
     {
         public Guid Id {  get; private set; } = Guid.NewGuid();
         public string Name { get; set; }
-        public string splate { get; set; }
         public List<User> Users { get; set; } = [];
         public bool IsPlaying { get; private set; } = false;
 

@@ -14,16 +14,17 @@ namespace DurakApi.Controllers
         [HttpGet("GetAll")]
         public async Task<IEnumerable<Room>> GetAllRooms()
         {
-            var result = await _context.Rooms.ToListAsync();
+            var result = await _context.Rooms.Include(x => x.Users).ToListAsync();
             return result;
         }
 
         [HttpPost("Create")]
-        public async Task<ActionResult<Guid>> CreateRoom(User? user, string? roomName)
+        public async Task<ActionResult<Guid>> CreateRoom(User user, string? roomName)
         {
             var room = new Room();
             room.Users = [user];
             room.Name = roomName ?? Guid.NewGuid().ToString();
+            _context.Users.Attach(user);
             await _context.Rooms.AddAsync(room);
             var rowsChanged = await _context.SaveChangesAsync();
             if (rowsChanged == 0)

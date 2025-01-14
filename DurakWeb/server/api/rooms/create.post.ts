@@ -1,20 +1,16 @@
 export default defineEventHandler(async (event) => {
     const cfg = useRuntimeConfig()
 
-    debugger
-
     const query = getQuery(event)
     let roomName = query.roomName
     if (roomName === '') {
         roomName = undefined
     }
 
-    debugger
-
     let result = null
 
     try {
-        result = await $fetch(`${cfg.url}/api/room/create`, {
+        result = await $fetch<string>(`${cfg.url}/api/room/create`, {
             method: 'POST',
             query: {
                 roomName: roomName,
