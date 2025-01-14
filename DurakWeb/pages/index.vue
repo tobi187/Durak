@@ -13,7 +13,7 @@
     <div class="flex justify-center">
       <div class="py-4 flex gap-4">
         <UInput v-model="roomName" />
-        <UButton @click="addUser">Create Room</UButton>
+        <UButton @click="createRoom">Create Room</UButton>
       </div>
     </div>
     <div>
@@ -33,37 +33,45 @@ const roomName = ref('')
 
 
 const addUser = async () => {
-  const user = await useFetch('/api/users/create', {
+  const { data, error } = await useFetch('/api/users/create', {
     query: {
       userName: userName.value
     }
   }
   )
-  if (user.error) {
+  if (error.value) {
+    console.log('usererr', error)
     return false
   }
-  const userData = user.data.value as User
-  updateUserState(userData.userId, userData.userName)
+  console.log('userval', data)
+  const userData = data.value as User
+  console.log(userData.id)
+  updateUserState(userData.id, userData.username)
   return true
 }
 
 const createRoom = async () => {
-  if (!userState.userId) {
-    if (!await addUser()) {
+  if (!userState.id) {
+    const userIsAdded = await addUser()
+    if (!userIsAdded) {
       return
     }
   }
+
+  console.log('user', userState)
+
   const { data, error } = useFetch('/api/rooms/create', {
     query: {
       roomName: roomName.value
-    }
+    },
+    body: userState
   })
 
   if (error.value) {
-    console.log(error)
+    console.log('roomerr', error)
     return
   }
-  console.log(data.value)
+  console.log('roomval', data.value)
   alert(data.value)
 }
 

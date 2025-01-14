@@ -1,14 +1,14 @@
 import type { User } from '~/types/api'
 
-export const useStore = () => {
-    const userState: User = reactive({
-        userId: undefined,
-        userName: undefined,
-    })
+const userState: User = reactive({
+    id: undefined,
+    username: undefined,
+})
 
+export const useStore = () => {
     const updateUserState = (userId?: string, userName?: string) => {
-        userState.userId = userId
-        userState.userName = userName
+        userState.id = userId
+        userState.username = userName
     }
 
     return {
