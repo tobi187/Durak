@@ -51,7 +51,7 @@ try {
         context.Database.EnsureCreated();
         // DbInitializer.Initialize(context);
     }
-    
+
     app.UseHttpsRedirection();
 
     //app.UseCors(builder => builder
