@@ -10,63 +10,28 @@
     <div class="flex justify-center">
       <div class="py-4 flex gap-4">
         <UInput v-model="roomName" />
-        <UButton @click="createRoom">Create Room</UButton>
+        <UButton @click="onTryCreateRoom">Create Room</UButton>
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import type { User } from '~/types/api'
-const { updateUserState, userState } = useStore()
+const { userState, createRoom } = useStore()
 
 const userName = ref('')
 const roomName = ref('')
 watch(userState, () => userName.value = userState.username ?? '')
 
-const addUser = async () => {
-  try {
-    const data = await $fetch('/api/users/create', {
-      query: {
-        userName: userName.value
-      }
-    }) as User
-  
-    updateUserState(data.id, data.username)
-    return true
-  } catch (ex) {
-    console.log(ex)
-    return false
-  }
-}
 
-const createRoom = async () => {
-  if (!userState.id) {
-    const userIsAdded = await addUser()
-    if (!userIsAdded) {
-      return
-    }
-  }
-
-  console.log('user', userState)
-
-  const { data, error } = await useFetch('/api/rooms/create', {
-    method: 'POST',
-    query: {
-      roomName: roomName.value
-    },
-    body: userState
-  })
-
-  if (error.value) {
-    console.log('roomerr', error)
+const onTryCreateRoom = async () => {
+  const result = await createRoom(roomName.value, userName.value)
+  if (!result) {
+    // TODO: show some Error probably
     return
   }
-  console.log('roomval', data.value)
-  alert(data.value)
+  await navigateTo('/game')
 }
 </script>
 
-<style>
-
-</style>
+<style></style>
