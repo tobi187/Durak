@@ -25,8 +25,9 @@
 
     public class Deck(List<Card> cards, Card trumpf)
     {
-        public List<Card> Cards { get; private set; } = cards;
-        public Card TrumpfCard { get; } = trumpf;
+        readonly List<Card> Cards = cards;
+        public readonly Card TrumpfCard = trumpf;
+        public int GetCount => Cards.Count;
 
         public static Deck NewDeck()
         {
@@ -38,6 +39,15 @@
             var rnd = new Random();
             cardList = [.. cardList.OrderBy(_ => rnd.Next())];
             return new Deck(cardList, cardList.Last());
+        }
+
+        public List<Card> GetCards(int amount)
+        {
+            // TODO: maybe better Data Structure
+            var end = Math.Min(Cards.Count, amount);
+            var cards = Cards[0..end];
+            Cards.RemoveRange(0, end);
+            return cards;
         }
     }
 }
