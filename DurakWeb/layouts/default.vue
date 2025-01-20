@@ -10,8 +10,18 @@
 </template>
 
 <script lang="ts" setup>
+const colorMode = useColorMode()
 
-const links = [{
+const isDark = computed({
+  get() {
+    return colorMode.value === 'dark'
+  },
+  set() {
+    colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'
+  }
+})
+
+const links = computed(() => [[{
   label: 'Durak',
   labelClass: 'text-lg',
   icon: 'i-heroicons-home',
@@ -22,8 +32,13 @@ const links = [{
   labelClass: 'text-lg',
   icon: 'i-heroicons-device-phone-mobile',
   to: '/not-implemented'
+}], [{
+  label: '',
+  icon: isDark.value ? 'i-heroicons-sun-20-solid' : 'i-heroicons-moon-20-solid',
+  click: () => isDark.value = !isDark.value
 }
 ]
+])
 </script>
 
 <style></style>
