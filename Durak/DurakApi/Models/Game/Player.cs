@@ -4,7 +4,7 @@
     {
         public readonly string ConnectionId = connectionId;
 
-        public List<CardValue> HandCards;
+        public List<Card> HandCards = [];
 
 
     }
