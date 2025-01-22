@@ -23,6 +23,39 @@
 
     public record Card(CardSign Sign, CardValue Value);
 
+    public class BoardCard(Card card, string from)
+    {
+        readonly Card Card = card;
+        readonly string From = from;
+        PlayerCardBeatT? Beaten;
+        public bool IsBeaten => Beaten != null;
+
+        public bool TrySchlag(PlayerCardBeatT other, CardSign trumpf)
+        {
+            if (!Schlag(other.Card, trumpf))
+                return false;
+            Beaten = other;
+            return true;
+        }
+
+        bool Schlag(Card other, CardSign trumpf)
+        {
+            if (Beaten != null)
+                return false;
+            if(other == null) return false;
+            if (Card.Sign == other.Sign)
+                return other.Value > Card.Value;
+            return other.Sign == trumpf;
+        }
+
+        public bool IsMe(Card card) => card == Card;
+
+        public PlayerCardT ToPlayerCardT()
+        {
+            return new PlayerCardT(Card, From, Beaten);
+        }
+    }
+
     public class Deck(List<Card> cards, Card trumpf)
     {
         readonly List<Card> Cards = cards;

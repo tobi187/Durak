@@ -23,6 +23,35 @@ interface Card {
     readonly value: CardValue
 }
 
+
+
+type GameState = {
+    board: {
+        locked: boolean
+        cards: [{
+            card: Card,
+            from: string,
+            beaten?: {
+                card: Card
+                from: string
+            }
+        }]
+    },
+    players: {
+        turnPlayer: {
+            id: string
+            userName: string
+        },
+        players: [
+            {
+                id: string
+                userName: string
+                handAmount: number
+            }
+        ]
+    }
+}
+
 export {
     type Card,
     CardSign,
