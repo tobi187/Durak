@@ -16,11 +16,27 @@
         {
             return new PlayerT(GameId, Username ?? "");
         }
+
+        public MeT GetMeT()
+        {
+            return new MeT(
+                ToPlayerT(),
+                HandCards
+            );
+        }
+
+        public void DrawCards(Deck deck)
+        {
+            if (HandCards.Count >= 6)
+                return;
+            var cardsToDraw = 6 - HandCards.Count;
+            HandCards.AddRange(deck.GetCards(cardsToDraw));
+        }
     }
 
     public record StateTransportT(BoardT Board, PlayersT Players);
 
-    public record BoardT(bool Locked, IEnumerable<PlayerCardT> Cards);
+    public record BoardT(bool Locked, int DeckCount, Card Trumpf, IEnumerable<PlayerCardT> Cards);
     public record PlayerCardBeatT(Card Card, string From);
     public record PlayerCardT(Card Card, string From, PlayerCardBeatT? Beaten);
 
@@ -29,7 +45,7 @@
 
     public record MeT(PlayerT Info, IEnumerable<Card> Hand);
 
-    public record PlayCardR(Card CardToPlay, Card CardToBeat);
+    public record BeatCardR(Card CardToPlay, Card CardToBeat);
 
-    public record SchiebCardR(Card CardToPlay);
+    public record PlayCardR(Card CardToPlay);
 }

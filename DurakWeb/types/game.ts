@@ -28,6 +28,8 @@ interface Card {
 type GameState = {
     board: {
         locked: boolean
+        deckCount: number
+        trumpf: Card
         cards: [{
             card: Card,
             from: string,
@@ -52,8 +54,18 @@ type GameState = {
     }
 }
 
+type Me = {
+    info: {
+        id: string
+        userName: string
+    },
+    hand: Card[]
+}
+
 export {
     type Card,
+    type GameState,
+    type Me,
     CardSign,
     CardValue
 }

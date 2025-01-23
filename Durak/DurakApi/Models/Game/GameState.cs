@@ -8,13 +8,14 @@
         static readonly int handCardAmount = 6;
         readonly List<BoardCard> boardState = [];
         bool IsBoardLocked => boardState.Any(x => x.IsBeaten);
+        bool IsBoardFull => boardState.Count >= handCardAmount;
         Player GetTurnPlayer => Players[turnPlayer];
 
         public GameState(IEnumerable<Player> players) {
             Players = players.ToList();
         }
 
-        public void StartGame()
+        public StateTransportT StartGame()
         {
             var rnd = new Random();
             Deck = Deck.NewDeck();
@@ -26,17 +27,7 @@
                 player.RenewGameID();
             }
             turnPlayer = rnd.Next(0, Players.Count);
-        }
-
-        public StateTransportT? CreateSharedState()
-        {
-            return new StateTransportT(
-                    new BoardT(false, []),
-                    new PlayersT(
-                        Players[turnPlayer].ToPlayerT(), 
-                        Players.Select(x => x.ToPlayerT())
-                    )
-                );
+            return BoardStateChanged();
         }
 
         void NextPlayer()
@@ -45,10 +36,19 @@
                 turnPlayer = 0;
         }
 
-        public StateTransportT? CanPlay(Card card, Card cardToBeat, string connId)
+        bool TryGetPlayerAndValidate(Card card, string connId, out Player? player)
         {
-            var player = Players.FirstOrDefault(x => x.ConnectionId == connId);
+            player = Players.FirstOrDefault(x => x.ConnectionId == connId);
             if (player == null)
+                return false;
+            if (!player.HandCards.Contains(card))
+                return false;
+            return true;
+        }
+
+        public StateTransportT? CanSchlag(Card card, Card cardToBeat, string connId)
+        {
+            if (!TryGetPlayerAndValidate(card, connId, out var player))
                 return null;
             if (GetTurnPlayer != player)
                 return null;
@@ -64,18 +64,69 @@
 
         public StateTransportT? CanSchieb(Card card, string connId)
         {
-            var player = Players.FirstOrDefault(x => x.ConnectionId == connId);
-            if (player == null)
+            if (!TryGetPlayerAndValidate(card, connId, out var player))
                 return null;
             if (GetTurnPlayer != player)
                 return null;
             if (IsBoardLocked)
                 return null;
+            if (!boardState.All(x => x.Card.Value == card.Value))
+                return null;
+            boardState.Add(new(card, player.GameId));
+            NextPlayer();
+            return BoardStateChanged();
+        }
+
+        bool IsAround(int num)
+        {
+            var higher = (num + 1) % Players.Count; 
+            var lower = (num - 1) % Players.Count; 
+            return higher == turnPlayer || lower == turnPlayer; 
+        }
+
+        public StateTransportT? AddCard(Card card, string connId)
+        {
+            var playerIndex = Players.FindIndex(x => x.ConnectionId == connId);
+            if (playerIndex == -1)
+                return null;
+            if (IsBoardFull)
+                return null;
+            if (!IsAround(playerIndex))
+                return null;
+            if (!Players[playerIndex].HandCards.Contains(card))
+                return null;
+            if (!boardState.Any(x => x.Card.Value == card.Value))
+                return null;
+            boardState.Add(new(card, Players[playerIndex].GameId));
+            return BoardStateChanged();
+        }
+
+        public StateTransportT? TakeCards(string connId)
+        {
+            var player = Players.FirstOrDefault(x => x.ConnectionId == connId);
+            if (player == null)
+                return null;
+            var nCards = boardState.Select(x => x.Card);
+            player.HandCards.AddRange(nCards);
+            NextPlayer();
+            boardState.Clear();
+            return BoardStateChanged();
         }
 
         StateTransportT BoardStateChanged()
         {
-
+            return new StateTransportT(
+                new BoardT(
+                    IsBoardLocked,
+                    Deck.GetCount,
+                    Deck.TrumpfCard,
+                    boardState.Select(x => x.ToPlayerCardT())
+                ),
+                new PlayersT(
+                    GetTurnPlayer.ToPlayerT(),
+                    Players.Select(x => x.ToPlayerT())
+                )
+            );
         }
     }
 }

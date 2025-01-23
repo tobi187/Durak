@@ -25,7 +25,7 @@
 
     public class BoardCard(Card card, string from)
     {
-        readonly Card Card = card;
+        public readonly Card Card = card;
         readonly string From = from;
         PlayerCardBeatT? Beaten;
         public bool IsBeaten => Beaten != null;
