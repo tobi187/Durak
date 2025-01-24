@@ -90,9 +90,9 @@ onMounted(async () => {
     return
   }
   await updateRooms()
-  timer.value = setInterval(async () => {
-    await updateRooms()
-  }, 1000 * 5);
+  // timer.value = setInterval(async () => {
+  //   await updateRooms()
+  // }, 1000 * 5);
 })
 
 onBeforeUnmount(() => {

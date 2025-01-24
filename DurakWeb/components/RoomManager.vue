@@ -30,7 +30,7 @@ const onTryCreateRoom = async () => {
     // TODO: show some Error probably
     return
   }
-  await navigateTo('/game')
+  await navigateTo('/room')
 }
 </script>
 

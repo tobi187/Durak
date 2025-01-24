@@ -1,6 +1,8 @@
 <template>
     <div>
-        <span class="text-9xl" v-html="combined"></span>
+        <span class="text-9xl hover:scale-125">
+            <img :src="cardPath" />
+        </span>
     </div>
 </template>
 
@@ -9,14 +11,7 @@ import { CardSign, type Card } from '~/types/game';
 
 const props = defineProps<Card>()
 
-const startNums: { [key in CardSign]: number } = {
-    [CardSign.Shippe]: 127136,
-    [CardSign.Herz]: 127152,
-    [CardSign.Karo]: 127168,
-    [CardSign.Kreuz]: 127184
-}
+const cardName = `${CardSign[props.sign]}_${props.value}.svg`.toLocaleLowerCase()
 
-const sign = startNums[props.sign]
-
-const combined = ref(`&#${sign + props.value};`)
+const cardPath = `/cards/${cardName}`
 </script>

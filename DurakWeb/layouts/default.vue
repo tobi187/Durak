@@ -1,8 +1,10 @@
 <template>
   <div>
-    <div class="p-1 px-8 border-b border-gray-200 dark:border-gray-800">
-      <UHorizontalNavigation :links="links" />
-    </div>
+    <ClientOnly>
+      <div class="p-1 px-8 border-b border-gray-200 dark:border-gray-800">
+        <UHorizontalNavigation :links="links" />
+      </div>
+    </ClientOnly>
     <div class="container mx-auto px-20">
       <slot />
     </div>
@@ -32,6 +34,11 @@ const links = computed(() => [[{
   labelClass: 'text-lg',
   icon: 'i-heroicons-device-phone-mobile',
   to: '/not-implemented'
+}, {
+  label: 'Gaaaaming Maan',
+  labelClass: 'text-lg',
+  icon: 'i-heroicons-beaker',
+  to: '/game'
 }], [{
   label: '',
   icon: isDark.value ? 'i-heroicons-sun-20-solid' : 'i-heroicons-moon-20-solid',

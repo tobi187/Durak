@@ -10,6 +10,10 @@
 
     public enum CardValue
     {
+        Two = 2,
+        Three = 3,
+        Four = 4,
+        Five = 5,
         Six = 6,
         Seven = 7,
         Eight = 8,
@@ -18,7 +22,7 @@
         Bube = 11,
         Queen = 12,
         King = 13,
-        Ace = 14,
+        Ace = 1,
     }
 
     public record Card(CardSign Sign, CardValue Value);
@@ -61,13 +65,15 @@
         readonly List<Card> Cards = cards;
         public readonly Card TrumpfCard = trumpf;
         public int GetCount => Cards.Count;
+        readonly static CardValue lowest = CardValue.Six; 
 
         public static Deck NewDeck()
         {
             var cardList = new List<Card>();
             foreach (var sign in Enum.GetValues<CardSign>())
                 foreach (var val in Enum.GetValues<CardValue>())
-                    cardList.Add(new Card(sign, val));
+                    if (val >= lowest)
+                        cardList.Add(new Card(sign, val));
 
             var rnd = new Random();
             cardList = [.. cardList.OrderBy(_ => rnd.Next())];

@@ -1,5 +1,4 @@
 ﻿using DurakApi.Models.Game;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DurakApi.Controllers
@@ -8,7 +7,7 @@ namespace DurakApi.Controllers
     [ApiController]
     public class TestGame : ControllerBase
     {
-        [HttpGet]
+        [HttpGet("GetRandomGame")]
         public StateTransportT GetRandomGame()
         {
             var l = new List<Player>();
@@ -16,6 +15,8 @@ namespace DurakApi.Controllers
             {
                 var pl = new Player($"Player-{i}");
                 pl.Username = $"Player-{i}";
+                pl.GameId = $"Player-{i}";
+                l.Add(pl);
             }
             var game = new GameState(l);
             var st = game.StartGame();
@@ -23,6 +24,7 @@ namespace DurakApi.Controllers
             return st;
         }
 
+        [HttpGet("GetRandomGameState")]
         public StateTransportT GetRandomGameState()
         {
             var l = new List<Player>();
@@ -30,6 +32,8 @@ namespace DurakApi.Controllers
             {
                 var pl = new Player($"Player-{i}");
                 pl.Username = $"Player-{i}";
+                pl.GameId = $"Player-{i}";
+                l.Add(pl);
             }
             var game = new GameState(l);
             var st = game.StartGame();
@@ -38,9 +42,11 @@ namespace DurakApi.Controllers
             return st;
         }
 
+        [HttpGet("GetRandomPlayerHand")]
         public MeT GetRandomPlayerHand()
         {
             var player = new Player("Player-me");
+            player.GameId = "Player-me";
             player.Username = "Player-me";
             var deck = Deck.NewDeck();
             player.DrawCards(deck);

@@ -36,6 +36,7 @@ export const useGame = () => {
             new signalR.HubConnectionBuilder()
             .withUrl(`${cfg.url}/durak`)
             .build()
+        
         try {
             await connection.start()
 
@@ -60,11 +61,36 @@ export const useGame = () => {
         }
     }
 
+    const testGetRandomGameState = async () => {
+        try {
+            const result = await $fetch<GameState>(`${cfg.public.url}/api/testgame/GetRandomGameState`)
+            if (result) {
+                game.state = result
+            } 
+        } catch(ex) {
+            console.log(ex)
+        }
+    } 
+
+    const testGetRandomHand = async () => {
+        try {
+            const result = await $fetch<Me>(`${cfg.public.url}/api/testgame/getrandomplayerhand`)
+            if (result) {
+                game.me = result
+            } 
+        } catch(ex) {
+            console.log('hand err', ex)
+        }
+    } 
+
     return {
         initConnection,
         setCard,
         pushCard,
         beatCard,
-        takeCards
+        takeCards,
+        game,
+        testGetRandomGameState,
+        testGetRandomHand
     }
 }

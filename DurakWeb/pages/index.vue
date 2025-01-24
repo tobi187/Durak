@@ -15,6 +15,9 @@
 </template>
 
 <script lang="ts" setup>
+import { CardSign, CardValue } from '~/types/game';
+
+
 
 </script>
 

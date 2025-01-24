@@ -4,7 +4,7 @@
     {
         public readonly string ConnectionId = connectionId;
         public string? Username { get; set; }
-        public string GameId { get; private set; }
+        public string GameId { get; set; }
 
         public List<Card> HandCards = [];
         public void RenewGameID()
@@ -14,7 +14,7 @@
 
         public PlayerT ToPlayerT()
         {
-            return new PlayerT(GameId, Username ?? "");
+            return new PlayerT(GameId, Username ?? "", HandCards.Count);
         }
 
         public MeT GetMeT()
@@ -40,7 +40,7 @@
     public record PlayerCardBeatT(Card Card, string From);
     public record PlayerCardT(Card Card, string From, PlayerCardBeatT? Beaten);
 
-    public record PlayerT(string Id, string UserName);
+    public record PlayerT(string Id, string UserName, int HandAmount);
     public record PlayersT(PlayerT TurnPlayer, IEnumerable<PlayerT> Players);
 
     public record MeT(PlayerT Info, IEnumerable<Card> Hand);

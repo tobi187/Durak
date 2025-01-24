@@ -2,7 +2,6 @@
 using DurakApi.Models.Game;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using NuGet.Configuration;
 using System.Collections.Concurrent;
 
 namespace DurakApi.Hubs
@@ -56,7 +55,7 @@ namespace DurakApi.Hubs
             var game = games[roomId];
             if (game == null)
                 return;
-            var state = game.AddCard(card, Context.ConnectionId));
+            var state = game.AddCard(card, Context.ConnectionId);
             if (state == null)
                 return;
             await Clients.Group(roomId).SendAsync("GameStateChanged", state);
