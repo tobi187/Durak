@@ -81,7 +81,7 @@
         {
             var higher = (num + 1) % Players.Count; 
             var lower = (num - 1) % Players.Count; 
-            return higher == turnPlayer || lower == turnPlayer; 
+            return higher == turnPlayer || lower == turnPlayer || turnPlayer == num; 
         }
 
         public StateTransportT? AddCard(Card card, string connId)
@@ -95,7 +95,7 @@
                 return null;
             if (!Players[playerIndex].HandCards.Contains(card))
                 return null;
-            if (!boardState.Any(x => x.Card.Value == card.Value))
+            if (!boardState.Any(x => x.Card.Value == card.Value) && boardState.Count > 0)
                 return null;
             boardState.Add(new(card, Players[playerIndex].GameId));
             return BoardStateChanged();

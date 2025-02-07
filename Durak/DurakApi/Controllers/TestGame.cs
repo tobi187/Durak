@@ -25,7 +25,7 @@ namespace DurakApi.Controllers
         }
 
         [HttpGet("GetRandomGameState")]
-        public StateTransportT GetRandomGameState()
+        public StateTransportT? GetRandomGameState()
         {
             var l = new List<Player>();
             for (var i = 0; i < 4; i++)
@@ -36,10 +36,15 @@ namespace DurakApi.Controllers
                 l.Add(pl);
             }
             var game = new GameState(l);
-            var st = game.StartGame();
-            game.AddCard(game.Players[game.turnPlayer].HandCards[0], l[0].GameId);
+            game.StartGame();
+            var c = game.Players[game.turnPlayer].HandCards.Where(x => x.Sign != game.Deck.TrumpfCard.Sign).MinBy(x => x.Value);
+            var ac = game.AddCard(c, game.Players[game.turnPlayer].ConnectionId);
+            var cc = game.Players[game.turnPlayer].HandCards.Where(
+                x => x.Sign == game.Deck.TrumpfCard.Sign
+                || (x.Sign == c.Sign && x.Value > c.Value)).First();
 
-            return st;
+            //var schlag = game.CanSchlag(cc, c, game.Players[game.turnPlayer].ConnectionId);
+            return ac;
         }
 
         [HttpGet("GetRandomPlayerHand")]
