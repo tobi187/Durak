@@ -17,6 +17,11 @@
             return new PlayerT(GameId, Username ?? "", HandCards.Count);
         }
 
+        public void RemoveCard(Card c)
+        {
+            HandCards.Remove(c);
+        }
+
         public MeT GetMeT()
         {
             return new MeT(

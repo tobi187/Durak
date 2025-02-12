@@ -3,10 +3,12 @@ using DotNetEnv;
 using DurakApi.Db;
 using Serilog.Events;
 using Microsoft.EntityFrameworkCore;
+using DurakApi.Hubs;
 
 Env.TraversePath().Load();
 
 Log.Logger = new LoggerConfiguration()
+    .Enrich.FromLogContext()
     .WriteTo.Console()
     .WriteTo.File(
         Env.GetString("log_path"), 
@@ -55,13 +57,19 @@ try {
     app.UseHttpsRedirection();
 
     app.UseCors(builder => builder
+        .WithOrigins(
+            Env.GetString("cors_urls", "*")
+            .Split(";")
+            .Select(x => x.TrimEnd('/'))
+            .ToArray())
         .AllowAnyHeader()
         .AllowAnyMethod()
-        .AllowAnyOrigin());
+        .AllowCredentials());
 
     app.UseAuthorization();
 
     app.MapControllers();
+    app.MapHub<DurakHub>("/durak");
 
     app.Run();
 } catch (Exception ex)

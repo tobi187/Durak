@@ -15,6 +15,12 @@
             Players = players.ToList();
         }
 
+        public GameState(string connId, string? userName) {
+            var player = new Player(connId);
+            player.Username = userName;
+            Players = [player];
+        }
+
         public StateTransportT StartGame()
         {
             var rnd = new Random();
@@ -22,8 +28,7 @@
             boardState.Clear();
             foreach (var player in Players)
             {
-                var hand = Deck.GetCards(handCardAmount);
-                player.HandCards.AddRange(hand);
+                player.DrawCards(Deck);
                 player.RenewGameID();
             }
             turnPlayer = rnd.Next(0, Players.Count);
@@ -59,6 +64,7 @@
             var beaten = beatenMaybe.TrySchlag(pc, Deck.TrumpfCard.Sign);
             if (!beaten)
                 return null;
+            player.RemoveCard(card);
             return BoardStateChanged();
         }
 
@@ -74,6 +80,7 @@
                 return null;
             boardState.Add(new(card, player.GameId));
             NextPlayer();
+            player.RemoveCard(card);
             return BoardStateChanged();
         }
 
@@ -98,6 +105,7 @@
             if (!boardState.Any(x => x.Card.Value == card.Value) && boardState.Count > 0)
                 return null;
             boardState.Add(new(card, Players[playerIndex].GameId));
+            Players[playerIndex].RemoveCard(card);
             return BoardStateChanged();
         }
 
@@ -127,6 +135,19 @@
                     Players.Select(x => x.ToPlayerT())
                 )
             );
+        }
+
+        public void RemovePlayer(string connectionId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<PlayerT> AddPlayer(string connId, string? userName)
+        {
+            var player = new Player(connId);
+            player.Username = userName;
+            Players.Add(player);
+            return Players.Select(x => x.ToPlayerT());
         }
     }
 }

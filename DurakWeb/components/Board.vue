@@ -2,12 +2,12 @@
   <div class="flex">
     <div class="w-3/4 grid grid-cols-3 grid-rows-2 gap-3">
       <div v-for="card in game.state?.board.cards">
-        <BoardCard v-bind="card" />
+        <BoardCard v-bind="card" :key="cardToBeatKey(card)" />
       </div>
       <div v-if="game.state?.board.cards ?? 7 < 6">
         <div
-          class="w-full h-full bg-yellow-400 opacity-50"
-          @v-if="state.highlighted"
+          class="w-full h-full opacity-50 bg-yellow-400 cursor-pointer"
+          v-if="show"
           @click="onClick"
         ></div>
       </div>
@@ -32,4 +32,6 @@ const onClick = async () => {
   }
   await tryPlayCard()
 }
+
+const show = computed(() => state.highlighted !== undefined)
 </script>

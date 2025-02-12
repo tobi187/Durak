@@ -1,15 +1,17 @@
 <template>
-  <div class="relative" ref="dropi">
+  <div class="relative">
     <span class="text-9xl">
       <img :src="cardPath" class="scale-75" />
     </span>
     <span class="absolute top-12 left-12" v-if="secondPath">
       <img :src="secondPath" />
     </span>
-    <span class="absolute top-12 left-12" v-else-if="state.highlighted">
-      <span class="w-3/4 h-3/4 opacity-50 bg-yellow-400" @click="onDrop">
-      </span>
-    </span>
+    <div
+      class="absolute top-12 left-12 w-full h-full"
+      v-else-if="state.highlighted"
+    >
+      <div class="w-3/4 h-3/4 opacity-50 bg-yellow-400 cursor-pointer" @click="onDrop"></div>
+    </div>
   </div>
 </template>
 
@@ -28,7 +30,7 @@ const onDrop = async () => {
 
 const getCardName = (card?: Card) => {
   if (!card) {
-    return ""
+    return undefined
   }
   const cardName =
     `${CardSign[card.sign]}_${card.value}.svg`.toLocaleLowerCase()

@@ -1,7 +1,11 @@
 <template>
   <div>
     <span class="text-9xl" @click="onCardClick">
-      <img :src="cardPath" class="hover:scale-125 game-card" />
+      <img
+        :src="cardPath"
+        class="hover:scale-125 game-card"
+        :class="{ 'scale-125': meHighlighted }"
+      />
     </span>
   </div>
 </template>

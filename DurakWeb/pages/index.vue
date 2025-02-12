@@ -7,18 +7,13 @@
       <RoomManager />
     </div>
     <div>
-      <div class="">
+      <div>
         <GameList />
       </div>
     </div>
   </div>
 </template>
 
-<script lang="ts" setup>
-import { CardSign, CardValue } from '~/types/game';
-
-
-
-</script>
+<script lang="ts" setup></script>
 
 <style></style>

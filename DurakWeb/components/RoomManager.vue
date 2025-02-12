@@ -3,7 +3,7 @@
     <div class="flex justify-center py-8">
       <div class="w-1/4">
         <UFormGroup size="xl" label="Username">
-          <UInput icon="i-heroicons-user" v-model="userName" />
+          <UInput icon="i-heroicons-user" v-model="userState.username" />
         </UFormGroup>
       </div>
     </div>
@@ -19,18 +19,20 @@
 <script lang="ts" setup>
 const { userState, createRoom } = useStore()
 
-const userName = ref('')
-const roomName = ref('')
-watch(userState, () => userName.value = userState.username ?? '')
-
+const roomName = ref("")
 
 const onTryCreateRoom = async () => {
-  const result = await createRoom(roomName.value, userName.value)
+  const result = await createRoom(roomName.value)
   if (!result) {
     // TODO: show some Error probably
     return
   }
-  await navigateTo('/room')
+  await navigateTo({
+    path: "/room",
+    query: {
+      creator: "true",
+    },
+  })
 }
 </script>
 

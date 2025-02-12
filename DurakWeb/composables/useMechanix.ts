@@ -10,8 +10,8 @@ const state: ICardState = reactive({
 
 export const useMechanix = () => {
   const { beatCard, pushCard, setCard, game } = useGame()
-  
-    const setHighlighted = (card: Card) => {
+
+  const setHighlighted = (card: Card) => {
     if (isCardEqual(state.highlighted, card)) {
       state.highlighted = undefined
     } else {
@@ -21,19 +21,20 @@ export const useMechanix = () => {
 
   const tryBeatCard = async (cardToBeat: Card) => {
     if (!state.highlighted) {
-        return
+      return
     }
     await beatCard(state.highlighted, cardToBeat)
   }
 
   const tryPlayCard = async () => {
     if (!state.highlighted) {
-        return
+      return
     }
+    console.log("heiiii")
     if (game.state?.players.turnPlayer.id === game.me?.info.id) {
-        await pushCard(state.highlighted)
+      await pushCard(state.highlighted)
     } else {
-        await setCard(state.highlighted)
+      await setCard(state.highlighted)
     }
   }
 
@@ -41,6 +42,6 @@ export const useMechanix = () => {
     setHighlighted,
     state: readonly(state),
     tryPlayCard,
-    tryBeatCard
+    tryBeatCard,
   }
 }

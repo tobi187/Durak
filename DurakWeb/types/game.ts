@@ -31,6 +31,15 @@ type CardToBeat = {
   }
 }
 
+interface Player {
+  id: string
+  userName: string
+}
+
+interface PlayerWithHandAmount extends Player {
+  handAmount: number
+}
+
 type GameState = {
   board: {
     locked: boolean
@@ -39,17 +48,8 @@ type GameState = {
     cards: CardToBeat[]
   }
   players: {
-    turnPlayer: {
-      id: string
-      userName: string
-    }
-    players: [
-      {
-        id: string
-        userName: string
-        handAmount: number
-      },
-    ]
+    turnPlayer: Player
+    players: PlayerWithHandAmount[]
   }
 }
 
@@ -66,6 +66,8 @@ export {
   type GameState,
   type Me,
   type CardToBeat,
+  type Player,
+  type PlayerWithHandAmount,
   CardSign,
   CardValue,
 }

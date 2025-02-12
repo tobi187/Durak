@@ -6,15 +6,8 @@
       :key="`${card.sign}_${card.value}`"
     />
   </div>
-  <button @click="loggi">bluthund</button>
 </template>
 
 <script lang="ts" setup>
 const { game } = useGame()
-
-const loggi = () => {
-  console.log(game.me)
-}
 </script>
-
-<style></style>

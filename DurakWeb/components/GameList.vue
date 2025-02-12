@@ -1,6 +1,8 @@
 <template>
   <div>
-    <div class="flex px-3 justify-between py-3.5 border-b border-gray-200 dark:border-gray-700">
+    <div
+      class="flex px-3 justify-between py-3.5 border-b border-gray-200 dark:border-gray-700"
+    >
       <UInput v-model="q" placeholder="Filter people..." />
       <UButton icon="i-heroicons-arrow-path" @click="updateRooms" />
     </div>
@@ -16,44 +18,49 @@
 const { joinRoom } = useStore()
 
 interface RoomInfo {
-  id?: string,
-  name?: string,
+  id?: string
+  name?: string
   amount?: string
   status?: string
 }
 
-const q = ref('')
+const q = ref("")
 const timer = ref()
 
-const columns = ref([{
-  key: 'name',
-  label: 'Name'
-}, {
-  key: 'amount',
-  label: 'Players'
-}, {
-  key: 'status',
-  label: 'Status'
-}, {
-  key: 'actions',
-  class: 'text-end',
-  rowClass: 'text-end'
-}])
+const columns = ref([
+  {
+    key: "name",
+    label: "Name",
+  },
+  {
+    key: "amount",
+    label: "Players",
+  },
+  {
+    key: "status",
+    label: "Status",
+  },
+  {
+    key: "actions",
+    class: "text-end",
+    rowClass: "text-end",
+  },
+])
 
 const vals = ref<RoomInfo[]>([])
 
 const updateRooms = async () => {
   try {
-    const data = await $fetch('/api/rooms/open')
+    const data = await $fetch("/api/rooms/open")
     if (!data) {
       return
     }
 
-    vals.value = data.map(el => ({
+    vals.value = data.map((el) => ({
       id: el.id,
       name: el.name,
-      status: el.isPlaying ? 'Already playing' : 'Waiting for you :D',
-      amount: `${el.users.length} / 4`
+      status: el.isPlaying ? "Already playing" : "Waiting for you :D",
+      amount: `${el.users.length} / 4`,
     }))
   } catch (ex) {
     console.log(ex)
@@ -64,13 +71,13 @@ const onTryJoinRoom = async (id?: string) => {
   if (!id) {
     return
   }
-  const result = await joinRoom(id, undefined)
+  const result = await joinRoom(id)
   if (!result) {
     // TODO: Show Error maybe
-    console.log('join room failed', result)
+    console.log("join room failed", result)
     return
   }
-  await navigateTo("/game")
+  return await navigateTo("/room")
 }
 
 const filteredRows = computed(() => {
