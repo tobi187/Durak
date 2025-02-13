@@ -7,6 +7,11 @@ WORKDIR /app
 EXPOSE 8080
 EXPOSE 8081
 
+RUN mkdir storage
+
+ENV log_path=/app/storage/logs/drak.log
+ENV connection_string="Data Source=/app/storage/drak.db;"
+ENV cors_urls=http://durak.koder.lol
 
 # This stage is used to build the service project
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
