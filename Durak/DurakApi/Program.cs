@@ -50,7 +50,8 @@ try {
         var services = scope.ServiceProvider;
 
         var context = services.GetRequiredService<ApplicationDbContext>();
-        context.Database.EnsureCreated();
+        // context.Database.EnsureCreated();
+        context.Database.Migrate();
         // DbInitializer.Initialize(context);
     }
 
