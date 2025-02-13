@@ -1,13 +1,12 @@
 <template>
   <div class="h-[85vdh]">
-    <div class="w-full flex p-3 px-20 border justify-evenly">
+    <!-- <div class="w-full flex p-3 px-20 border justify-evenly">
       <UButton @click="testGetRandomGameState">Gen State</UButton>
       <UButton @click="testGetRandomHand">Gen Hand</UButton>
-    </div>
+    </div> -->
     <div class="w-full flex justify-center">
-      <div>
-        Turnplayer:
-        {{ game?.state?.players?.turnPlayer?.userName ?? "Loading..." }}
+      <div class="font-bold text-lg">
+        {{ statusMessage }}
       </div>
     </div>
     <div class="grid grid-cols-4 grid-rows-4">
@@ -41,24 +40,61 @@
 </template>
 
 <script setup lang="ts">
-const { testGetRandomGameState, testGetRandomHand, game } = useGame();
+const { testGetRandomGameState, testGetRandomHand, game } = useGame()
+
+const timeLeft = ref(14)
+
+watch(
+  () => game.state?.board.takeRequested,
+  (isTakeRequested) => {
+    if (isTakeRequested) {
+      const timer = setInterval(() => {
+        if (timeLeft.value <= 0) {
+          timeLeft.value = 14
+          clearInterval(timer)
+        }
+        timeLeft.value -= 1
+      }, 1000)
+    }
+  },
+)
 
 const ops = computed(() => {
-  const myId = game?.me?.info?.id;
+  const myId = game?.me?.info?.id
   if (!myId) {
-    return undefined;
+    return undefined
   }
-  return game?.state?.players?.players?.filter((pl) => pl.id !== myId);
-});
+  return game?.state?.players?.players?.filter((pl) => pl.id !== myId)
+})
 
 const isOppThere = (i: number) => {
-  return ops.value && ops.value[i];
-};
+  return ops.value && ops.value[i]
+}
 
 const getOpp = (i: number) => {
-  if (!ops.value) return "";
-  if (!ops.value[i]) return "";
-  if (!ops.value[i].id) return "";
-  return ops.value[i].id;
-};
+  if (!ops.value) return ""
+  if (!ops.value[i]) return ""
+  if (!ops.value[i].id) return ""
+  return ops.value[i].id
+}
+
+const statusMessage = computed(() => {
+  if (!game.state) {
+    return "Loading..."
+  }
+  const turnPlayer = game.state?.players.turnPlayer.userName
+  const isLocked = game.state?.board.locked
+  const takeReq = game.state?.board.takeRequested
+  const message = `Current Player: ${turnPlayer}`
+  if (isLocked) {
+    return message + ` is am Schlagen`
+  }
+  if (takeReq) {
+    return (
+      message +
+      ` will nehmen. Du hast ${timeLeft.value} Sekunden restliche Karten zu legen`
+    )
+  }
+  return message
+})
 </script>

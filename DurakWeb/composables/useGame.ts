@@ -1,5 +1,6 @@
 import * as signalR from "@microsoft/signalr"
 import type { Card, GameState, Me, Player } from "@/types/game"
+import { useMechanix } from "./useMechanix"
 
 let game = reactive<{
   state: GameState | undefined
@@ -41,7 +42,7 @@ export const useGame = () => {
   }
 
   const takeCards = async () => {
-    await connection?.send("TakeCards", {
+    await connection?.send("OnTakeCardsRequested", {
       roomId: store.roomState.id,
     })
   }
@@ -67,6 +68,12 @@ export const useGame = () => {
     })
   }
 
+  const endRequested = async () => {
+    await connection?.send("OnEndRequested", {
+      roomId: store.roomState.id,
+    })
+  }
+
   const initConnection = async () => {
     connection = new signalR.HubConnectionBuilder()
       .withUrl(`${cfg.public.url}/durak`)
@@ -88,6 +95,12 @@ export const useGame = () => {
         }
         game.me = me
         console.log(game.me)
+      })
+
+      connection.on("TakeRequested", () => {
+        if (game.state) {
+          game.state!.board.takeRequested = true
+        }
       })
 
       connection.on("UserJoined", (players: Player[]) => {
@@ -145,6 +158,7 @@ export const useGame = () => {
     startGame,
     createRoom,
     joinRoom,
+    endRequested,
     game: readonly(game),
     testGetRandomGameState,
     testGetRandomHand,

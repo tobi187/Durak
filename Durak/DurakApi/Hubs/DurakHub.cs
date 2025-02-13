@@ -1,9 +1,9 @@
-﻿using DurakApi.Db;
+﻿using Serilog;
+using DurakApi.Db;
 using DurakApi.Models;
 using DurakApi.Models.Game;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using Serilog;
 using System.Collections.Concurrent;
 
 namespace DurakApi.Hubs
@@ -32,6 +32,7 @@ namespace DurakApi.Hubs
 
         public async Task StartGame(HubBaseModel model, ApplicationDbContext context)
         {
+            Log.Information("[StartGame] Recv HubBaseModel: {@model}", model);
             var rId = Guid.Parse(model.roomId);
             if (!games.TryGetValue(model.roomId, out var gameState))
                 return;
@@ -44,7 +45,7 @@ namespace DurakApi.Hubs
             await context.SaveChangesAsync();
             var state = gameState!.StartGame();
             await Clients.Group(model.roomId).SendAsync("StartGame", state);
-            Log.Information("GameState: {@state}", state);
+            Log.Information("[StartGame] Send GameState: {@state}", state);
             await SendHands(gameState);
         }
 
@@ -54,7 +55,7 @@ namespace DurakApi.Hubs
             foreach (var player in state.Players)
             {
                 var cards = player.GetMeT();
-                Log.Information("PLayerkarten: {@cards}", cards);
+                Log.Information("[SendHands] Send Playerkarten: {@cards}", cards);
                 await Clients.Client(player.ConnectionId).SendAsync("Hand", cards);
             }
         }
@@ -64,74 +65,118 @@ namespace DurakApi.Hubs
             var player = state.Players.FirstOrDefault(x => x.ConnectionId == Context.ConnectionId);
             if (player == null) return;
             var cards = player.GetMeT();
-            Log.Information("Send New Hand Player {@cards}", cards);
+            Log.Information("[SendCallerHand] Send New Hand Player {@cards}", cards);
             await Clients.Caller.SendAsync("Hand", cards);
         }
 
         public async Task AddCard(HubCardModel model)
         {
-            Log.Information("Rec HubCardModel {@model}", model);
+            Log.Information("[AddCard] Recv HubCardModel {@model}", model);
             var game = games[model.roomId];
             if (game == null)
                 return;
             StateTransportT? state;
-            lock (model.roomId) {
+            lock (model.roomId)
                 state = game.AddCard(model.card, Context.ConnectionId);
-            }
+            
             if (state == null)
                 return;
-            Log.Information("Send state: {@state}", state);
+            Log.Information("[AddCard] Send state: {@state}", state);
             await Clients.Group(model.roomId).SendAsync("GameStateChanged", state);
             await SendCallerHand(game);
         }
 
         public async Task SchlagCard(HubCardToBeatModel model)
         {
-            Log.Information("Rec HubCardToBeatModel {@model}", model);
+            Log.Information("[SchlagCard] Recv HubCardToBeatModel {@model}", model);
             var game = games[model.roomId];
             if (game == null) return;
             StateTransportT? state;
             lock (model.roomId)
-            {
                 state = game.CanSchlag(model.card, model.cardToBeat, Context.ConnectionId);
-            }
+            
             if (state == null) return;
-            Log.Information("Send State {@state}", state);
+            Log.Information("[SchlagCard] Send State {@state}", state);
             await Clients.Group(model.roomId).SendAsync("GameStateChanged", state);
             await SendCallerHand(game);
         }
 
         public async Task SchiebCard(HubCardModel model)
         {
-            Log.Information("Rec HubCardModel {@model}", model);
+            Log.Information("[SchiebCard] Recv HubCardModel {@model}", model);
             var game = games[model.roomId];
             if (game == null) return;
             StateTransportT? state;
             lock (model.roomId)
-            {
                 state = game.CanSchieb(model.card, Context.ConnectionId);
-            }
+            
             if (state == null) return;
-            Log.Information("Send State {@state}", state);
+            Log.Information("[SchiebCard] Send State {@state}", state);
             await Clients.Group(model.roomId).SendAsync("GameStateChanged", state);
             await SendCallerHand(game);
         }
 
-        public async Task TakeCards(HubBaseModel model)
+        public async Task OnEndRequested(HubBaseModel model)
         {
-            Log.Information("Rec HubBseModel {@model}", model);
+            Log.Information("[OnEndRequested] Recv HubBaseModel {@model}", model);
             var game = games[model.roomId];
             if (game == null) return;
             StateTransportT? state;
             lock (model.roomId)
-            {
-                state = game.TakeCards(Context.ConnectionId);
-            }
-            if (state == null) return;
-            Log.Information("Send State {@state}", state);
+                state = game.OnEndRequest(Context.ConnectionId);
+            if (state == null)
+                return;
+
+            Log.Information("[OnEndRequested] Send End Accepted {@state}", state);
             await Clients.Group(model.roomId).SendAsync("GameStateChanged", state);
             await SendHands(game);
         }
+
+        public async Task OnTakeCardsRequested(HubBaseModel model)
+        {
+            Log.Information("[OnTakeCardsRequested] Recv HubBaseModel {@model}", model);
+            var game = games[model.roomId];
+            if (game == null) return;
+            bool? actionLeft;
+            lock (model.roomId)
+                actionLeft = game.RequestTakeCards(Context.ConnectionId);
+
+            if (actionLeft == null)
+                return;
+            if (!actionLeft.Value)
+            {
+                Log.Information("[OnTakeCardsRequested] Waiting for players To Add Cards (10 sec)");
+                await Clients.Group(model.roomId).SendAsync("TakeRequested");
+                await Task.Delay(TimeSpan.FromSeconds(10));
+                Log.Information("[OnTakeCardsRequested] Finished Waiting");
+            }
+            StateTransportT? state;
+            lock (model.roomId)
+                state = game.TakeCards(Context.ConnectionId);
+
+            if (state == null)
+                return;
+            
+            Log.Information("[TakeCards] Send State {@state}", state);
+            await Clients.Group(model.roomId).SendAsync("GameStateChanged", state);
+            await SendHands(game);
+        }
+
+        //public async Task TakeCards(HubBaseModel model)
+        //{
+        //    Log.Information("[TakeCards] Recv HubBseModel {@model}", model);
+        //    var game = games[model.roomId];
+        //    if (game == null) return;
+        //    StateTransportT? state;
+        //    lock (model.roomId)
+        //    {
+        //        state = game.TakeCards(Context.ConnectionId);
+        //    }
+        //    if (state == null) return;
+        //    Log.Information("[TakeCards] Send State {@state}", state);
+        //    await Clients.Group(model.roomId).SendAsync("GameStateChanged", state);
+        //    await SendHands(game);
+        //}
 
         public override Task OnDisconnectedAsync(Exception? exception)
         {

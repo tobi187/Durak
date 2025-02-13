@@ -7,12 +7,14 @@
         public int turnPlayer = 0;
         static readonly int handCardAmount = 6;
         readonly List<BoardCard> boardState = [];
+        bool TakeRequested = false;
+        List<string> EndRequested = [];
         bool IsBoardLocked => boardState.Any(x => x.IsBeaten);
         bool IsBoardFull => boardState.Count >= handCardAmount;
         Player GetTurnPlayer => Players[turnPlayer];
 
         public GameState(IEnumerable<Player> players) {
-            Players = players.ToList();
+            Players = [.. players];
         }
 
         public GameState(string connId, string? userName) {
@@ -57,6 +59,8 @@
                 return null;
             if (GetTurnPlayer != player)
                 return null;
+            if (TakeRequested)
+                return null;
             var beatenMaybe = boardState.FirstOrDefault(x => x.IsMe(cardToBeat));
             if (beatenMaybe == null)
                 return null;
@@ -74,7 +78,7 @@
                 return null;
             if (GetTurnPlayer != player)
                 return null;
-            if (IsBoardLocked)
+            if (IsBoardLocked || TakeRequested)
                 return null;
             if (!boardState.All(x => x.Card.Value == card.Value))
                 return null;
@@ -86,9 +90,20 @@
 
         bool IsAround(int num)
         {
-            var higher = (num + 1) % Players.Count; 
-            var lower = (num - 1) % Players.Count; 
+            var higher = Math.Abs((num + 1) % Players.Count); 
+            var lower = Math.Abs((num - 1) % Players.Count); 
             return higher == turnPlayer || lower == turnPlayer || turnPlayer == num; 
+        }
+
+        bool IsOnBoard(Card card)
+        {
+            if (boardState.Count == 0)
+                return false;
+            if (boardState.Any(x => x.Card.Value == card.Value))
+                return true;
+            if (boardState.Any(x => x.Beaten?.Card.Value == card.Value))
+                return true;
+            return false;
         }
 
         public StateTransportT? AddCard(Card card, string connId)
@@ -102,30 +117,82 @@
                 return null;
             if (!Players[playerIndex].HandCards.Contains(card))
                 return null;
-            if (!boardState.Any(x => x.Card.Value == card.Value) && boardState.Count > 0)
+            if (!IsOnBoard(card))
                 return null;
             boardState.Add(new(card, Players[playerIndex].GameId));
             Players[playerIndex].RemoveCard(card);
             return BoardStateChanged();
         }
 
-        public StateTransportT? TakeCards(string connId)
+        public StateTransportT? OnEndRequest(string connId)
+        {
+            var playerIndex = Players.FindIndex(x => x.ConnectionId == connId);
+            if (playerIndex == -1)
+                return null;
+            if (!IsAround(playerIndex))
+                return null;
+            if (EndRequested.Contains(connId))
+                return null;
+            EndRequested.Add(connId);
+            if (EndRequested.Count < Math.Min(2, Players.Count - 1))
+                return null;
+            if (TakeRequested)
+                return TakeCards(GetTurnPlayer.ConnectionId);
+            if (!boardState.All(x => x.IsBeaten))
+                return null;
+            boardState.Clear();
+            DrawCards();
+            return BoardStateChanged();
+        }
+
+        public bool? RequestTakeCards(string connId)
         {
             var player = Players.FirstOrDefault(x => x.ConnectionId == connId);
             if (player == null)
                 return null;
+            if (player != GetTurnPlayer || boardState.Count == 0)
+                return null;
+            TakeRequested = true;
+            if (IsBoardFull)
+                return true;
+            Player[] aroundPlayers = [
+                Players[(turnPlayer + 1) % Players.Count],
+                Players[(turnPlayer - 1) % Players.Count]]; // todo -1 exception -> 2 player problem
+            var actionPlayers = aroundPlayers.Where(x => x.HasPlayableCards(boardState));
+            return !actionPlayers.Any();
+        }
+
+        public StateTransportT? TakeCards(string connId)
+        {
+            if (!TakeRequested)
+                return null;
+            var player = Players.FirstOrDefault(x => x.ConnectionId == connId);
+            if (player == null || player != GetTurnPlayer)
+                return null;
+            TakeRequested = false;
             var nCards = boardState.Select(x => x.Card);
             player.HandCards.AddRange(nCards);
             NextPlayer();
             boardState.Clear();
+            DrawCards();
             return BoardStateChanged();
+        }
+
+        void DrawCards()
+        {
+            for (int i = turnPlayer + 1; i < Players.Count; i++)
+                Players[i].DrawCards(Deck);
+            for (int i = 0; i <= turnPlayer; i++)
+                Players[i].DrawCards(Deck);
         }
 
         StateTransportT BoardStateChanged()
         {
+            EndRequested = []; // TODO: check if this is ok ?
             return new StateTransportT(
                 new BoardT(
                     IsBoardLocked,
+                    TakeRequested,
                     Deck.GetCount,
                     Deck.TrumpfCard,
                     boardState.Select(x => x.ToPlayerCardT())
@@ -139,7 +206,7 @@
 
         public void RemovePlayer(string connectionId)
         {
-            throw new NotImplementedException();
+            return;
         }
 
         public IEnumerable<PlayerT> AddPlayer(string connId, string? userName)

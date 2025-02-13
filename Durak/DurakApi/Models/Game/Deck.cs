@@ -31,7 +31,7 @@
     {
         public readonly Card Card = card;
         readonly string From = from;
-        PlayerCardBeatT? Beaten;
+        public PlayerCardBeatT? Beaten;
         public bool IsBeaten => Beaten != null;
 
         public bool TrySchlag(PlayerCardBeatT other, CardSign trumpf)

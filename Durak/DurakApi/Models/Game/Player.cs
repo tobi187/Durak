@@ -1,4 +1,6 @@
-﻿namespace DurakApi.Models.Game
+﻿using Microsoft.AspNetCore.Razor.Language;
+
+namespace DurakApi.Models.Game
 {
     public class Player(string connectionId)
     {
@@ -37,11 +39,20 @@
             var cardsToDraw = 6 - HandCards.Count;
             HandCards.AddRange(deck.GetCards(cardsToDraw));
         }
+
+        public bool HasPlayableCards(List<BoardCard> board)
+        {
+            foreach (var card in board)
+                if (HandCards.Any(x => x.Value == card.Card.Value 
+                    || x.Value == card.Beaten?.Card.Value))
+                    return true;
+            return false;
+        }
     }
 
     public record StateTransportT(BoardT Board, PlayersT Players);
 
-    public record BoardT(bool Locked, int DeckCount, Card Trumpf, IEnumerable<PlayerCardT> Cards);
+    public record BoardT(bool Locked, bool TakeRequested, int DeckCount, Card Trumpf, IEnumerable<PlayerCardT> Cards);
     public record PlayerCardBeatT(Card Card, string From);
     public record PlayerCardT(Card Card, string From, PlayerCardBeatT? Beaten);
 

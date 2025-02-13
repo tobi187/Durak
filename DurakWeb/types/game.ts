@@ -43,6 +43,7 @@ interface PlayerWithHandAmount extends Player {
 type GameState = {
   board: {
     locked: boolean
+    takeRequested: boolean
     deckCount: number
     trumpf: Card
     cards: CardToBeat[]
