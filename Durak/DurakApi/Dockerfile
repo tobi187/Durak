@@ -25,5 +25,7 @@ RUN dotnet publish "./DurakApi.csproj" -c $BUILD_CONFIGURATION -o /app/publish /
 # This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
 FROM base AS final
 WORKDIR /app
+RUN mkdir store
+RUN chmod 777 store/
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "DurakApi.dll"]

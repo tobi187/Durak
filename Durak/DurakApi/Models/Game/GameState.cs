@@ -88,11 +88,12 @@
             return BoardStateChanged();
         }
 
-        bool IsAround(int num)
+        bool IsAround(int? num = null)
         {
-            var higher = Math.Abs((num + 1) % Players.Count); 
-            var lower = Math.Abs((num - 1) % Players.Count); 
-            return higher == turnPlayer || lower == turnPlayer || turnPlayer == num; 
+            num ??= turnPlayer;
+            var higher = num + 1 == Players.Count ? 0 : num + 1; 
+            var lower = num == 0 ? Players.Count - 1 : num - 1;
+            return higher == turnPlayer || lower == turnPlayer; //|| turnPlayer == num; 
         }
 
         bool IsOnBoard(Card card)
@@ -113,7 +114,7 @@
                 return null;
             if (IsBoardFull)
                 return null;
-            if (!IsAround(playerIndex))
+            if (!IsAround())
                 return null;
             if (!Players[playerIndex].HandCards.Contains(card))
                 return null;
@@ -129,7 +130,7 @@
             var playerIndex = Players.FindIndex(x => x.ConnectionId == connId);
             if (playerIndex == -1)
                 return null;
-            if (!IsAround(playerIndex))
+            if (!IsAround())
                 return null;
             if (EndRequested.Contains(connId))
                 return null;
@@ -156,8 +157,8 @@
             if (IsBoardFull)
                 return true;
             Player[] aroundPlayers = [
-                Players[(turnPlayer + 1) % Players.Count],
-                Players[(turnPlayer - 1) % Players.Count]]; // todo -1 exception -> 2 player problem
+                Players[turnPlayer == 0 ? Players.Count - 1 : turnPlayer - 1],
+                Players[turnPlayer == Players.Count - 1 ? 0 : turnPlayer + 1]];
             var actionPlayers = aroundPlayers.Where(x => x.HasPlayableCards(boardState));
             return !actionPlayers.Any();
         }
@@ -180,6 +181,7 @@
 
         void DrawCards()
         {
+            // TODO: change draw order; remember starting player
             for (int i = turnPlayer + 1; i < Players.Count; i++)
                 Players[i].DrawCards(Deck);
             for (int i = 0; i <= turnPlayer; i++)
