@@ -23,7 +23,7 @@ try {
     var builder = WebApplication.CreateBuilder(args);
     
     var connectionString = Env.GetString("connection_string");
-    
+    Directory.CreateDirectory("/app/store/logs");
     // Add services to the container.
     builder.Services.AddSerilog();
     builder.Services.AddDbContext<ApplicationDbContext>(
