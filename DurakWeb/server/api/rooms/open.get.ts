@@ -5,7 +5,9 @@ export default defineEventHandler(async (event) => {
 
   let rooms = null
   try {
-    rooms = await $fetch<Room[]>(`${cfg.url}/api/room/getall`)
+    rooms = await $fetch<Room[]>(`${cfg.url}/api/room/getall`, {
+      headers: addHeader(),
+    })
   } catch (ex) {
     console.log(ex)
   }

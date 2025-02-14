@@ -4,11 +4,12 @@ export default defineEventHandler(async (event) => {
 
   try {
     const result = await $fetch<string>(`${cfg.url}/api/room/join`, {
-      method: 'POST',
+      method: "POST",
+      headers: addHeader(),
       query: {
-        roomId: query.roomId
+        roomId: query.roomId,
       },
-      body: await readBody(event)
+      body: await readBody(event),
     })
 
     return result
