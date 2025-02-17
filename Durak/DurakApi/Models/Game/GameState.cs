@@ -114,7 +114,7 @@
                 return null;
             if (IsBoardFull)
                 return null;
-            if (!IsAround())
+            if (!IsAround(playerIndex))
                 return null;
             if (!Players[playerIndex].HandCards.Contains(card))
                 return null;
@@ -130,12 +130,12 @@
             var playerIndex = Players.FindIndex(x => x.ConnectionId == connId);
             if (playerIndex == -1)
                 return null;
-            if (!IsAround())
+            if (!IsAround(playerIndex))
                 return null;
             if (EndRequested.Contains(connId))
                 return null;
             EndRequested.Add(connId);
-            if (EndRequested.Count < Math.Min(2, Players.Count - 1))
+            if (EndRequested.Count < Math.Min(1, Players.Count - 1))
                 return null;
             if (TakeRequested)
                 return TakeCards(GetTurnPlayer.ConnectionId);

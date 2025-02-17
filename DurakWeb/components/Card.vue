@@ -3,7 +3,7 @@
     <span class="text-9xl" @click="onCardClick">
       <img
         :src="cardPath"
-        class="hover:scale-125 game-card"
+        class="hover:scale-125 game-card w-40"
         :class="{ 'scale-125': meHighlighted }"
       />
     </span>

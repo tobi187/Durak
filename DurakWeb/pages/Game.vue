@@ -10,7 +10,7 @@
       </div>
     </div>
     <div class="grid grid-cols-4 grid-rows-4">
-      <div class="col-start-2 col-span-2">
+      <div class="col-span-4 flex justify-center">
         <OpponentHand v-if="isOppThere(0)" :playerId="getOpp(0)" />
       </div>
       <div class="col-start-1 row-start-1 row-span-4 flex align-middle">
@@ -32,7 +32,7 @@
           :flipIt="true"
         />
       </div>
-      <div class="col-start-2 col-span-2">
+      <div class="col-span-4">
         <Hand />
       </div>
     </div>
