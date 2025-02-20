@@ -8,7 +8,7 @@ export const addHeader = () => {
   const auth = cfg.basicAuth
 
   if (auth) {
-    const val = Buffer.from(auth, "base64")
+    const val = Buffer.from(auth).toString("base64")
     headers["Authorization"] = `Basic ${val}`
   }
 
