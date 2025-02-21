@@ -3,13 +3,12 @@ definePageMeta({
   layout: "empty",
 })
 
-const errorMessage = ref("")
-
 const supabase = useSupabaseClient()
 
 const email = ref("")
 const pw = ref("")
 const pwWdh = ref("")
+const errorMessage = ref("")
 
 const checkEmilPw = () => {
   if (!/^[^@]+@[^@]+\.[^@]+$/.test(email.value)) {
@@ -73,13 +72,13 @@ const passwordReset = () => {
 }
 </script>
 <template>
-  <div class="w-full h-full p-10">
+  <div class="lg:p-10">
     <div class="text-center p-8">
       <h1 class="text-3xl font-bold">Welcome to the World of Durak</h1>
     </div>
     <div>
-      <div class="flex">
-        <div class="text-center w-1/2 p-10">
+      <div class="flex flex-col lg:flex-row">
+        <div class="text-center lg:w-1/2 lg:p-10">
           <UFormGroup class="p-3" label="Email" size="lg">
             <UInput v-model="email" type="email" icon="i-heroicons-envelope" />
           </UFormGroup>
@@ -94,7 +93,9 @@ const passwordReset = () => {
             >Passwort zurücksetzen</ULink
           >
         </div>
-        <div class="text-center w-1/2 p-10 border-l-white h-full border-l-2">
+        <div
+          class="text-center lg:w-1/2 lg:p-10 lg:border-l-2 lg:border-t-0 border-white border-t-2"
+        >
           <UFormGroup class="p-3" label="Email" size="lg">
             <UInput v-model="email" type="email" icon="i-heroicons-envelope" />
           </UFormGroup>
@@ -118,7 +119,7 @@ const passwordReset = () => {
     <div class="p-6 text-center">
       <p class="text-red-600">&nbsp;{{ errorMessage }}</p>
     </div>
-    <div class="p-6 px-20 flex justify-evenly">
+    <div class="lg:px-20 lg:p-6 flex justify-evenly">
       <UButton @click="signIn">Sign In</UButton>
       <UButton @click="signInAnonymously">Sign In anonymously</UButton>
       <UButton @click="signUpWithMail">Sign Up</UButton>

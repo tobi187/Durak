@@ -17,6 +17,7 @@
       "Mechanix",
       "nuxt",
       "Schieb",
-      "signalr"
+      "signalr",
+      "supabase"
     ],
   }
