@@ -1,24 +1,35 @@
+import 'package:durak_app/helpers/config_keys.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:global_configuration/global_configuration.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'routes.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   await GlobalConfiguration().loadFromAsset('config');
+
+  await Supabase.initialize(
+    url: ConfigKeys.supabaseUrl,
+    anonKey: ConfigKeys.supabaseKey,
+  );
+
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'Durak',
       theme: FlexThemeData.light(scheme: FlexScheme.bigStone),
       darkTheme: FlexThemeData.dark(scheme: FlexScheme.bigStone),
       themeMode: ThemeMode.system,
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      routerConfig: createRoutes(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }

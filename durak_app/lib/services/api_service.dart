@@ -3,12 +3,11 @@ import 'dart:convert';
 import 'package:durak_app/helpers/config_keys.dart';
 import 'package:durak_app/models/api/room.dart';
 import 'package:durak_app/models/api/user.dart';
-import 'package:global_configuration/global_configuration.dart';
 import 'package:http/http.dart' as http;
 import 'package:logging/logging.dart';
 
 class ApiService {
-  final String backendUrl = GlobalConfiguration().get(ConfigKeys.backendUrl);
+  final String backendUrl = ConfigKeys.backendUrl;
 
   final logger = Logger('ApiService');
 

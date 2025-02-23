@@ -1,4 +1,5 @@
 {
     "backend_url": "",
-    "backend_scheme": ""
+    "supabase_url": "",
+    "supabase_pub_key": ""
 }
