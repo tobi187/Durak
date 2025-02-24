@@ -16,9 +16,10 @@
 
 <script lang="ts" setup>
 const { joinRoom } = useStore()
+const supabase = useSupabaseClient()
 
 interface RoomInfo {
-  id?: string
+  id?: number
   name?: string
   amount?: string
   status?: string
@@ -51,17 +52,22 @@ const vals = ref<RoomInfo[]>([])
 
 const updateRooms = async () => {
   try {
-    const data = await $fetch("/api/rooms/open")
-    if (!data) {
+    const { data: res, error} = await supabase.from("Room")
+      .select("*")
+      .eq("is_playing", false)
+      .eq("is_private", false)
+  
+    if (error) {
+      console.log(error)
       return
     }
 
-    vals.value = data.map((el) => ({
+    vals.value = res.map((el) => ({
       id: el.id,
       name: el.name,
-      status: el.isPlaying ? "Already playing" : "Waiting for you :D",
-      amount: `${el.users.length} / 4`,
-    }))
+      amount: `??? / 4`,
+      status: el.is_playing ? "Already playing" : "Waiting for you :D",
+    })) as RoomInfo[]
   } catch (ex) {
     console.log(ex)
   }
