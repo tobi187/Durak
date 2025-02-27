@@ -18,6 +18,7 @@
 
 <script lang="ts" setup>
 const { userState, createRoom } = useStore()
+const supabase = useSupabaseClient()
 
 const roomName = ref("")
 
