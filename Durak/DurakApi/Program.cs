@@ -1,9 +1,11 @@
 using Serilog;
 using DotNetEnv;
 using DurakApi.Db;
-using Serilog.Events;
-using Microsoft.EntityFrameworkCore;
 using DurakApi.Hubs;
+using Serilog.Events;
+using DurakApi.Helpers;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 Env.TraversePath().Load();
 
@@ -26,8 +28,20 @@ try {
     
     // Add services to the container.
     builder.Services.AddSerilog();
+    
+    builder.Services.AddAuthentication();
+    builder.Services.AddAuthorizationBuilder()
+        .AddPolicy(PolicyNames.LoggedIn, p => 
+            p.RequireClaim("SecurityStamp", "AspNet.Identity.SecurityStamp"));
+    
     builder.Services.AddDbContext<ApplicationDbContext>(
         opts => opts.UseSqlite(connectionString));
+    
+    builder.Services.AddIdentityApiEndpoints<IdentityUser>(opts => {
+        opts.User.RequireUniqueEmail = true;
+    })
+    .AddEntityFrameworkStores<ApplicationDbContext>();
+    
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
@@ -67,7 +81,10 @@ try {
         .AllowAnyMethod()
         .AllowCredentials());
 
+    app.UseAuthentication();
     app.UseAuthorization();
+
+    app.MapIdentityApi<IdentityUser>();
 
     app.MapControllers();
     app.MapHub<DurakHub>("/durak");
