@@ -9,6 +9,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 {
     public DbSet<Profile> Profiles { get; set; }
     public DbSet<Room> Rooms { get; set; }
+    public DbSet<GameRule> GameRules { get; set; }
 
     //protected override void OnModelCreating(ModelBuilder modelBuilder)
     //{

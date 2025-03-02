@@ -15,8 +15,10 @@
 </template>
 
 <script lang="ts" setup>
+import type { Room } from "~/types/api"
+
 const { joinRoom } = useStore()
-const supabase = useSupabaseClient()
+const { get } = useApi()
 
 interface RoomInfo {
   id?: number
@@ -51,26 +53,18 @@ const columns = ref([
 const vals = ref<RoomInfo[]>([])
 
 const updateRooms = async () => {
-  try {
-    const { data: res, error} = await supabase.from("Room")
-      .select("*")
-      .eq("is_playing", false)
-      .eq("is_private", false)
-  
-    if (error) {
-      console.log(error)
-      return
-    }
-
-    vals.value = res.map((el) => ({
-      id: el.id,
-      name: el.name,
-      amount: `??? / 4`,
-      status: el.is_playing ? "Already playing" : "Waiting for you :D",
-    })) as RoomInfo[]
-  } catch (ex) {
-    console.log(ex)
+  const res = await get<Room[]>({
+    url: "/api/room/getall",
+  })
+  if (res.isErr()) {
+    return
   }
+  vals.value = res.value.map((el) => ({
+    id: el.id,
+    name: el.name,
+    amount: `??? / 4`,
+    status: el.isPlaying ? "Already playing" : "Waiting for you :D",
+  })) as RoomInfo[]
 }
 
 const onTryJoinRoom = async (id?: string) => {

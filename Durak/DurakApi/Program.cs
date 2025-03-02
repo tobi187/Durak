@@ -35,7 +35,7 @@ try {
             p.RequireClaim("SecurityStamp", "AspNet.Identity.SecurityStamp"));
     
     builder.Services.AddDbContext<ApplicationDbContext>(
-        opts => opts.UseSqlite(connectionString));
+        opts => opts.UseNpgsql(connectionString));
     
     builder.Services.AddIdentityApiEndpoints<IdentityUser>(opts => {
         opts.User.RequireUniqueEmail = true;

@@ -1,9 +1,9 @@
-﻿namespace DurakApi.Models;
+﻿using DurakApi.Db;
 
-public class Profile
+namespace DurakApi.Models;
+
+public class Profile : DbBase
 {
-    public Guid Id { get; set; }
     public string Username { get; set; }
     public bool IsTempUser { get; set; }
-
 }

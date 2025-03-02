@@ -1,9 +1,11 @@
 <script setup lang="ts">
+import type { Result } from "neverthrow"
+
+const auth = useAuth()
+
 definePageMeta({
   layout: "empty",
 })
-
-const supabase = useSupabaseClient()
 
 const email = ref("")
 const pw = ref("")
@@ -26,16 +28,13 @@ const signIn = async () => {
   if (!checkEmilPw()) {
     return
   }
-  const res = await supabase.auth.signInWithPassword({
-    email: email.value,
-    password: pw.value,
-  })
+  const res = await auth.login(email.value, pw.value)
 
   await handleAuthResult(res)
 }
 
 const signInAnonymously = async () => {
-  const res = await supabase.auth.signInAnonymously()
+  const res = await auth.loginAnonymous()
 
   await handleAuthResult(res)
 }
@@ -48,17 +47,15 @@ const signUpWithMail = async () => {
     errorMessage.value = "Pls check your Passwords are same"
     return
   }
-  const res = await supabase.auth.signUp({
-    email: email.value,
-    password: pw.value,
-  })
+  const res = await auth.register(email.value, pw.value)
 
   await handleAuthResult(res)
 }
 
-const handleAuthResult = async (result: any) => {
-  if (result.error || !result.data) {
+const handleAuthResult = async (result: Result<unknown, void>) => {
+  if (result.isErr()) {
     errorMessage.value = "Something went wrong. Please try again"
+    return
   }
   await navigateTo("/")
 }
@@ -71,6 +68,7 @@ const passwordReset = () => {
   errorMessage.value = "Haha verarscht. Ist noch nicht eingebaut"
 }
 </script>
+
 <template>
   <div class="lg:p-10">
     <div class="text-center p-8">

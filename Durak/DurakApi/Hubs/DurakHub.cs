@@ -164,22 +164,6 @@ public class DurakHub : Hub
         await SendHands(game);
     }
 
-    //public async Task TakeCards(HubBaseModel model)
-    //{
-    //    Log.Information("[TakeCards] Recv HubBseModel {@model}", model);
-    //    var game = games[model.roomId];
-    //    if (game == null) return;
-    //    StateTransportT? state;
-    //    lock (model.roomId)
-    //    {
-    //        state = game.TakeCards(Context.ConnectionId);
-    //    }
-    //    if (state == null) return;
-    //    Log.Information("[TakeCards] Send State {@state}", state);
-    //    await Clients.Group(model.roomId).SendAsync("GameStateChanged", state);
-    //    await SendHands(game);
-    //}
-
     public override Task OnDisconnectedAsync(Exception? exception)
     {
         if (exception != null)
