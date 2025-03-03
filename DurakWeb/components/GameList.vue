@@ -7,8 +7,10 @@
       <UButton icon="i-heroicons-arrow-path" @click="updateRooms" />
     </div>
     <UTable :rows="filteredRows" :columns="columns">
-      <template #actions-data="{ row }">
+      <template #actions-data="{ r }">
         <UButton @click="() => {}">View Rules</UButton>
+      </template>
+      <template #actions-data="{ row }">
         <UButton @click="() => onTryJoinRoom(row.id)">Join</UButton>
       </template>
     </UTable>

@@ -1,6 +1,5 @@
 import * as signalR from "@microsoft/signalr"
 import type { Card, GameState, Me, Player } from "@/types/game"
-import { useMechanix } from "./useMechanix"
 
 let game = reactive<{
   state: GameState | undefined
@@ -94,7 +93,6 @@ export const useGame = () => {
           return
         }
         game.me = me
-        console.log(game.me)
       })
 
       connection.on("TakeRequested", () => {
@@ -116,11 +114,22 @@ export const useGame = () => {
           navigateTo("/game")
         })
       })
-      // await connection.send("joinRoom", store.roomState.id)
     } catch (ex) {
       console.log("Game Hub Connection failed")
       console.log(ex)
     }
+  }
+
+  const cutConnection = async () => {
+    if (connection !== null) {
+      try {
+        await connection.stop()
+      } catch (ex) {
+        // don't care probably
+        console.log(ex)
+      }
+    }
+    connection = null
   }
 
   const testGetRandomGameState = async () => {
@@ -159,6 +168,7 @@ export const useGame = () => {
     createRoom,
     joinRoom,
     endRequested,
+    cutConnection,
     game: readonly(game),
     testGetRandomGameState,
     testGetRandomHand,
