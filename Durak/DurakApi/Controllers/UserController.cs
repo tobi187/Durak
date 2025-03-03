@@ -1,47 +1,41 @@
 ﻿using DurakApi.Db;
-using DurakApi.Models;
+using DurakApi.Helpers;
+using DurakApi.Models.Db;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DurakApi.Controllers;
 
+[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 public class UserController(ApplicationDbContext context) : ControllerBase
 {
     readonly ApplicationDbContext _context = context;
 
-    // GET api/<UserController>/5
-    [HttpGet("{id}")]
-    public async Task<ActionResult<Profile>> Get(Guid id)
+    [HttpGet("Me")]
+    public async Task<ActionResult<Profile>> Me()
     {
-        var result = await _context.Profiles.FindAsync(id);
+        var result = await _context.Profiles.FindAsync(AuthHelper.FindId(User));
         if (result is null)
-            return NotFound();
+        {
+            result = Profile.New(User);
+            await _context.Profiles.AddAsync(result);
+            await _context.SaveChangesAsync();
+        }
         return Ok(result);
     }
 
-    // POST api/<UserController>
-    [HttpGet("Create")]
-    public async Task<ActionResult<Profile>> Create(string? userName)
-    {
-        var user = new Profile { 
-            Id = Guid.NewGuid(), 
-            Username = userName ?? Guid.NewGuid().ToString(),
-        };
-        _context.Profiles.Add(user);
-        var res = await _context.SaveChangesAsync();
-        if (res < 1)
-            return BadRequest();
-        return Ok(user);
-    }
+    public record UserNameChangeReq(string Username);
 
-    // DELETE api/<UserController>/5
-    [HttpDelete("{id}")]
-    public async Task Delete(Guid id)
+    [HttpPost("Rename")]
+    public async Task<IResult> Rename(UserNameChangeReq req)
     {
-        var usr = new Profile { Id = id };
-        _context.Profiles.Attach(usr);
-        _context.Profiles.Remove(usr);
+        var res = await _context.Profiles.FindAsync(AuthHelper.FindId(User));
+        if (res == null)
+            return Results.NotFound();
+        res.Username = req.Username;
         await _context.SaveChangesAsync();
+        return TypedResults.Ok();
     }
 }

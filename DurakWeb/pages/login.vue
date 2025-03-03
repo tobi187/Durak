@@ -49,10 +49,15 @@ const signUpWithMail = async () => {
   }
   const res = await auth.register(email.value, pw.value)
 
-  await handleAuthResult(res)
+  if (res.isErr()) {
+    return
+  }
+  const lgRes = await auth.login(email.value, pw.value)
+
+  await handleAuthResult(lgRes)
 }
 
-const handleAuthResult = async (result: Result<unknown, void>) => {
+const handleAuthResult = async (result: Result<unknown, any>) => {
   if (result.isErr()) {
     errorMessage.value = "Something went wrong. Please try again"
     return

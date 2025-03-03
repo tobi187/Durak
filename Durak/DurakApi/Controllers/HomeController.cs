@@ -1,5 +1,4 @@
 ﻿using Serilog;
-using DurakApi.Helpers;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
@@ -17,22 +16,19 @@ public class HomeController : ControllerBase
         return Ok(new { status = "alive" });
     }
 
-    public record AnonUser(string? Name);
-
     [HttpPost("/anon")]
-    public async Task<IResult> LoginAnonymous(AnonUser user)
+    public async Task<IResult> LoginAnonymous(bool useCookies = true)
     {
         try
         {
-            Claim[] claims = [
-                new (ClaimTypes.Name, user.Name ?? TempCringe.GetRandomName()),
-                new (ClaimTypes.Anonymous, "true")];
-            var iden = new ClaimsIdentity(claims, IdentityConstants.ApplicationScheme);
+            Claim[] claims = [new (ClaimTypes.NameIdentifier, Guid.NewGuid().ToString())];
+            var idenScheme = useCookies ? IdentityConstants.ApplicationScheme : IdentityConstants.BearerScheme;
+            var iden = new ClaimsIdentity(claims, idenScheme);
             var principa = new ClaimsPrincipal(iden);
             var props = new AuthenticationProperties();
             props.IsPersistent = false;
             props.ExpiresUtc = DateTimeOffset.UtcNow.AddDays(1);
-            await HttpContext.SignInAsync(IdentityConstants.ApplicationScheme, principa, props);
+            await HttpContext.SignInAsync(idenScheme, principa, props);
             return TypedResults.Empty;
         }
         catch (Exception ex)

@@ -3,6 +3,7 @@ using System;
 using DurakApi.Db;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DurakApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250303053157_Sqlite")]
+    partial class Sqlite
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.2");
@@ -58,10 +61,7 @@ namespace DurakApi.Migrations
                     b.Property<bool>("IsTempUser")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("RoomId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("RoomId1")
+                    b.Property<Guid?>("RoomId")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -73,7 +73,7 @@ namespace DurakApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("RoomId1");
+                    b.HasIndex("RoomId");
 
                     b.ToTable("Profiles");
                 });
@@ -85,6 +85,9 @@ namespace DurakApi.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("CreatorId")
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("IsPlaying")
@@ -101,6 +104,8 @@ namespace DurakApi.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatorId");
 
                     b.HasIndex("RulesId");
 
@@ -301,18 +306,24 @@ namespace DurakApi.Migrations
 
             modelBuilder.Entity("DurakApi.Models.Profile", b =>
                 {
-                    b.HasOne("DurakApi.Models.Room", "Room")
+                    b.HasOne("DurakApi.Models.Room", null)
                         .WithMany("Users")
-                        .HasForeignKey("RoomId1");
-
-                    b.Navigation("Room");
+                        .HasForeignKey("RoomId");
                 });
 
             modelBuilder.Entity("DurakApi.Models.Room", b =>
                 {
+                    b.HasOne("DurakApi.Models.Profile", "Creator")
+                        .WithMany()
+                        .HasForeignKey("CreatorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("DurakApi.Models.GameRule", "Rules")
                         .WithMany()
                         .HasForeignKey("RulesId");
+
+                    b.Navigation("Creator");
 
                     b.Navigation("Rules");
                 });

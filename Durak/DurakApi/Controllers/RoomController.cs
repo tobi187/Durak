@@ -1,5 +1,7 @@
 ﻿using DurakApi.Db;
-using DurakApi.Models;
+using DurakApi.Helpers;
+using DurakApi.Models.Db;
+using DurakApi.Models.Api;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
@@ -15,34 +17,50 @@ public class RoomController(ApplicationDbContext context) : ControllerBase
     static readonly int MaxPlayerCount = 4;
     
     [HttpGet("GetAll")]
-    public async Task<IEnumerable<Room>> GetAllRooms()
+    public async Task<IEnumerable<RoomInfoModelS>> GetAllRooms()
     {
         var result = await _context.Rooms
-            .Where(x => x.IsPlaying == false && x.Users.Count < MaxPlayerCount)
-            .Include(x => x.Users).ToListAsync();
-        return result;
+            .Include(x => x.Users)
+            .Where(x => x.Users.Count > 0 && !x.IsPlaying)
+            .ToListAsync();
+        
+        return result.Select(x => x.ToRoomInfo());
+    }
+
+    [HttpGet("GetRoom")]
+    public async Task<IResult> GetRoomInfo(RoomIdModelR model)
+    {
+        var result = await _context.Rooms
+            .Include(x => x.Rules)
+            .FirstOrDefaultAsync(x => x.Id == model.RoomId);
+
+        if (result is null)
+            return TypedResults.BadRequest();
+        return TypedResults.Ok(result);
     }
 
     [HttpPost("Create")]
-    public async Task<ActionResult<Guid>> CreateRoom(Profile user, string? roomName)
+    public async Task<IResult> CreateRoom(RoomNameModelR model)
     {
-        var room = new Room();
-        room.Users = [user];
-        room.Name = roomName ?? Guid.NewGuid().ToString();
+        var user = await _context.Profiles.FindAsync(AuthHelper.FindId(User));
+        if (user == null)
+            return TypedResults.Forbid();
+        var room = Room.New(user, model.RoomName);
         _context.Profiles.Attach(user);
         await _context.Rooms.AddAsync(room);
         var rowsChanged = await _context.SaveChangesAsync();
         if (rowsChanged == 0)
-            return BadRequest();
-        return Ok(room.Id);
+            return TypedResults.BadRequest();
+        return TypedResults.Ok(room.Id);
     }
 
     [HttpPost("Join")]
-    public async Task<ActionResult<Guid>> Join(Guid roomId, Profile user)
+    public async Task<ActionResult<Guid>> Join(RoomIdModelR model)
     {
-        var room = await _context.Rooms.FindAsync(roomId);
-        if (room == null)
-            return BadRequest("Room not found");
+        var user = await _context.Profiles.FindAsync(AuthHelper.FindId(User));
+        var room = await _context.Rooms.FindAsync(model.RoomId);
+        if (room == null || user == null)
+            return BadRequest("Not found");
         if (room.IsPlaying || room.Users.Count >= MaxPlayerCount)
             return BadRequest("Room is full");
         room.Users.Add(user);

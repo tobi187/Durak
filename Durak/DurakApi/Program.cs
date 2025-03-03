@@ -31,11 +31,11 @@ try {
     
     builder.Services.AddAuthentication();
     builder.Services.AddAuthorizationBuilder()
-        .AddPolicy(PolicyNames.LoggedIn, p => 
+        .AddPolicy(AuthHelper.LoggedIn, p => 
             p.RequireClaim("SecurityStamp", "AspNet.Identity.SecurityStamp"));
     
     builder.Services.AddDbContext<ApplicationDbContext>(
-        opts => opts.UseNpgsql(connectionString));
+        opts => opts.UseSqlite(connectionString));
     
     builder.Services.AddIdentityApiEndpoints<IdentityUser>(opts => {
         opts.User.RequireUniqueEmail = true;

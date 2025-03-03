@@ -160,7 +160,7 @@ public class GameState
             Players[turnPlayer == 0 ? Players.Count - 1 : turnPlayer - 1],
             Players[turnPlayer == Players.Count - 1 ? 0 : turnPlayer + 1]];
         var actionPlayers = aroundPlayers.Where(x => x.HasPlayableCards(boardState));
-        return !actionPlayers.Any();
+        return actionPlayers.Any();
     }
 
     public StateTransportT? TakeCards(string connId)

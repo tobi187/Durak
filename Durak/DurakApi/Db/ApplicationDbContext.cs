@@ -1,7 +1,7 @@
-using DurakApi.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using DurakApi.Models.Db;
 
 namespace DurakApi.Db;
 

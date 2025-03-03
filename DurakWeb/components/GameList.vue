@@ -8,6 +8,7 @@
     </div>
     <UTable :rows="filteredRows" :columns="columns">
       <template #actions-data="{ row }">
+        <UButton @click="() => {}">View Rules</UButton>
         <UButton @click="() => onTryJoinRoom(row.id)">Join</UButton>
       </template>
     </UTable>
@@ -17,14 +18,12 @@
 <script lang="ts" setup>
 import type { Room } from "~/types/api"
 
-const { joinRoom } = useStore()
-const { get } = useApi()
+const { get, post } = useApi()
 
 interface RoomInfo {
-  id?: number
+  id?: string
   name?: string
-  amount?: string
-  status?: string
+  amount?: number
 }
 
 const q = ref("")
@@ -40,8 +39,10 @@ const columns = ref([
     label: "Players",
   },
   {
-    key: "status",
-    label: "Status",
+    key: "rules",
+    label: "Rules",
+    class: "text-center",
+    rowClass: "text-center",
   },
   {
     key: "actions",
@@ -62,21 +63,23 @@ const updateRooms = async () => {
   vals.value = res.value.map((el) => ({
     id: el.id,
     name: el.name,
-    amount: `??? / 4`,
-    status: el.isPlaying ? "Already playing" : "Waiting for you :D",
-  })) as RoomInfo[]
+    amount: el.playerCount,
+  }))
 }
 
 const onTryJoinRoom = async (id?: string) => {
   if (!id) {
     return
   }
-  const result = await joinRoom(id)
-  if (!result) {
-    // TODO: Show Error maybe
-    console.log("join room failed", result)
+  const result = await post<string>({
+    url: "/api/room/join",
+    body: { roomId: id },
+  })
+
+  if (result.isErr()) {
     return
   }
+
   return await navigateTo("/room")
 }
 

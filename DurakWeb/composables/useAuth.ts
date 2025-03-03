@@ -1,8 +1,10 @@
-const user = reactive<{
-  name?: string
+import type { User } from "~/types/api"
+
+const userState = reactive<{
+  user?: User
   isGetting: boolean
 }>({
-  name: undefined,
+  user: undefined,
   isGetting: false,
 })
 
@@ -10,26 +12,28 @@ export const useAuth = () => {
   const { get, post } = useApi()
 
   const fetchMe = async () => {
-    user.isGetting = true
-    // change this
-    const res = await get<string>({
-      url: "/api/users/me",
+    userState.isGetting = true
+    const res = await get<User>({
+      url: "/api/user/me",
     })
 
     if (res.isOk()) {
-      user.name = res.value
+      userState.user = res.value
     }
-    user.isGetting = false
+    userState.isGetting = false
   }
 
   const login = async (mail: string, pw: string) => {
     const res = await post({
       url: "/login",
+      query: { useCookies: true },
       body: {
         email: mail,
         password: pw,
       },
     })
+
+    await fetchMe()
 
     return res
   }
@@ -48,22 +52,20 @@ export const useAuth = () => {
 
   const loginAnonymous = async () => {
     const res = await post({
-      url: "/loginAnonymous",
+      url: "/anon",
+      query: { useCookies: true },
     })
+
+    await fetchMe()
 
     return res
   }
-
-  onMounted(async () => {
-    if (!user.name && !user.isGetting) {
-      await fetchMe()
-    }
-  })
 
   return {
     login,
     loginAnonymous,
     register,
-    userState: readonly(user),
+    fetchMe,
+    userState: readonly(userState),
   }
 }

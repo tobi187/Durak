@@ -14,21 +14,21 @@ let connection: signalR.HubConnection | null = null
 
 export const useGame = () => {
   const cfg = useRuntimeConfig()
-  const store = useStore()
+  const { userState } = useAuth()
   const nuxtApp = useNuxtApp()
   const tempPlayerList = ref<Player[]>([])
 
   const setCard = async (card: Card) => {
     console.log("Set Card", card)
     await connection?.send("AddCard", {
-      roomId: store.roomState.id,
+      roomId: userState.user?.roomId,
       card: card,
     })
   }
 
   const beatCard = async (card: Card, cardToBeat: Card) => {
     await connection?.send("SchlagCard", {
-      roomId: store.roomState.id,
+      roomId: userState.user?.roomId,
       card: card,
       cardToBeat: cardToBeat,
     })
@@ -36,47 +36,47 @@ export const useGame = () => {
 
   const pushCard = async (card: Card) => {
     await connection?.send("SchiebCard", {
-      roomId: store.roomState.id,
+      roomId: userState.user?.roomId,
       card: card,
     })
   }
 
   const takeCards = async () => {
     await connection?.send("OnTakeCardsRequested", {
-      roomId: store.roomState.id,
+      roomId: userState.user?.roomId,
     })
   }
 
   const startGame = async () => {
-    console.log("Starrrting")
     await connection?.send("StartGame", {
-      roomId: store.roomState.id,
+      roomId: userState.user?.roomId,
     })
   }
 
   const createRoom = async () => {
     await connection?.send("CreateRoom", {
-      roomId: store.roomState.id,
-      userName: store.userState.username,
+      roomId: userState.user?.roomId,
+      userName: userState?.user?.username,
     })
   }
 
   const joinRoom = async () => {
     await connection?.send("JoinRoom", {
-      roomId: store.roomState.id,
-      userName: store.userState.username,
+      roomId: userState.user?.roomId,
+      userName: userState?.user?.username,
     })
   }
 
   const endRequested = async () => {
     await connection?.send("OnEndRequested", {
-      roomId: store.roomState.id,
+      roomId: userState.user?.roomId,
     })
   }
 
   const initConnection = async () => {
     connection = new signalR.HubConnectionBuilder()
       .withUrl(`${cfg.public.url}/durak`)
+      .withAutomaticReconnect()
       .build()
 
     try {

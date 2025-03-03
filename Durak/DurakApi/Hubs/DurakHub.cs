@@ -13,13 +13,11 @@ namespace DurakApi.Hubs;
 public class DurakHub : Hub
 {
     static readonly ConcurrentDictionary<string, GameState> games = new();
-    static readonly ConcurrentDictionary<string, string> userRooms = new();
 
     public async Task CreateRoom(HubUserModel model)
     {
         await Groups.AddToGroupAsync(Context.ConnectionId, model.roomId);
         games[model.roomId] = new GameState(Context.ConnectionId, model.userName);
-        userRooms[Context.ConnectionId] = model.roomId;
     }
 
     public async Task JoinRoom(HubUserModel model)
@@ -28,7 +26,6 @@ public class DurakHub : Hub
         if (!games.TryGetValue(model.roomId, out var gameState))
             return;
         var players = gameState.AddPlayer(Context.ConnectionId, model.userName);
-        userRooms[Context.ConnectionId] = model.roomId;
         await Clients.Group(model.roomId).SendAsync("UserJoined", players);
     }
 
@@ -145,7 +142,7 @@ public class DurakHub : Hub
 
         if (actionLeft == null)
             return;
-        if (!actionLeft.Value)
+        if (actionLeft.Value)
         {
             Log.Information("[OnTakeCardsRequested] Waiting for players To Add Cards (10 sec)");
             await Clients.Group(model.roomId).SendAsync("TakeRequested");
@@ -166,15 +163,7 @@ public class DurakHub : Hub
 
     public override Task OnDisconnectedAsync(Exception? exception)
     {
-        if (exception != null)
-            Log.Information(exception, "Player disconnected from Hub");
-
-        if (!userRooms.TryGetValue(Context.ConnectionId, out var room))
-            return base.OnDisconnectedAsync(exception);
-
-        var game = games[room];
-        game.RemovePlayer(Context.ConnectionId);
-
+        Log.Information(exception, "Player disconnected from Hub");
         // TODO: DB Stuff
 
         return base.OnDisconnectedAsync(exception);
