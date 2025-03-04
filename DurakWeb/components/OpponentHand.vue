@@ -6,7 +6,12 @@
       </div>
       <div class="flex-col flex">
         <div v-for="index in player?.handAmount ?? 0" :key="index">
-          <img class="w-[4vw] rotate-90" :src="image" />
+          <img
+            class="w-[4vw] rotate-90"
+            :src="image"
+            height="300"
+            width="150"
+          />
         </div>
       </div>
     </div>
@@ -16,7 +21,7 @@
       </div>
       <div class="flex gap-x-8">
         <div v-for="index in player?.handAmount ?? 0" :key="index">
-          <img :src="image" />
+          <img :src="image" height="300" width="150" />
         </div>
       </div>
     </div>
@@ -29,16 +34,16 @@ const { game } = useGame()
 const props = defineProps({
   playerId: {
     type: String,
-    required: true
+    required: true,
   },
   flipIt: {
     type: Boolean,
-    required: false
-  }
+    required: false,
+  },
 })
 
 const player = computed(() => {
-  return game.state?.players.players.find(el => el.id === props.playerId)
+  return game.state?.players.players.find((el) => el.id === props.playerId)
 })
 
 const image = `/card_back/blue.svg`

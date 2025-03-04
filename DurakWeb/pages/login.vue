@@ -75,7 +75,7 @@ const passwordReset = () => {
 </script>
 
 <template>
-  <div class="lg:p-10">
+  <div class="lg:p-10 lg:px-20 px-5 pb-5">
     <div class="text-center p-8">
       <h1 class="text-3xl font-bold">Welcome to the World of Durak</h1>
     </div>

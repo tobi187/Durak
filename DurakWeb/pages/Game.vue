@@ -40,9 +40,9 @@
 </template>
 
 <script setup lang="ts">
-const { testGetRandomGameState, testGetRandomHand, game } = useGame()
+const { game } = useGame()
 
-const timeLeft = ref(14)
+const timeLeft = ref(11)
 
 watch(
   () => game.state?.board.takeRequested,

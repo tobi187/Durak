@@ -13,11 +13,10 @@
       </div>
     </div>
     <div class="w-1/4">
-      <span class="border">deck: {{ game.state?.board.deckCount }}</span>
-      <Card v-if="game.state?.board.trumpf" v-bind="game.state?.board.trumpf" />
-      <div class="dropper" v-if="!game.state?.board.locked">
+      <Deck v-if="game.state?.board.trumpf" v-bind="game.state?.board.trumpf" />
+      <!-- <div class="dropper" v-if="!game.state?.board.locked">
         <div class="w-10 h-28"></div>
-      </div>
+      </div> -->
     </div>
   </div>
 </template>

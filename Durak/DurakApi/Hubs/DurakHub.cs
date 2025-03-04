@@ -37,7 +37,7 @@ public class DurakHub : Hub
             return;
         var room = await context.Rooms.Include(x => x.Users)
             .FirstOrDefaultAsync(x => x.Id == rId);
-        if (room == null || !room.CanPlay || room.IsPlaying)
+        if (room == null || !room.CanPlay() || room.IsPlaying)
             return;
         room.IsPlaying = true;
         context.Update(room);

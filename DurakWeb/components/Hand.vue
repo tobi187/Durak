@@ -8,7 +8,7 @@
         <UButton @click="onEndClick">Ende</UButton>
       </div>
     </div>
-    <div v-if="game?.me?.hand" class="flex gap-x-8">
+    <div v-if="game?.me?.hand" class="flex relative gap-6">
       <Card
         v-for="card in game?.me?.hand"
         v-bind="card"

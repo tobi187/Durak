@@ -7,7 +7,7 @@
       <UButton icon="i-heroicons-arrow-path" @click="updateRooms" />
     </div>
     <UTable :rows="filteredRows" :columns="columns">
-      <template #actions-data="{ r }">
+      <template #rules-data="{ row }">
         <UButton @click="() => {}">View Rules</UButton>
       </template>
       <template #actions-data="{ row }">

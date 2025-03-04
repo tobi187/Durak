@@ -28,11 +28,11 @@ public class RoomController(ApplicationDbContext context) : ControllerBase
     }
 
     [HttpGet("GetRoom")]
-    public async Task<IResult> GetRoomInfo(RoomIdModelR model)
+    public async Task<IResult> GetRoomInfo(Guid roomId)
     {
         var result = await _context.Rooms
             .Include(x => x.Rules)
-            .FirstOrDefaultAsync(x => x.Id == model.RoomId);
+            .FirstOrDefaultAsync(x => x.Id == roomId);
 
         if (result is null)
             return TypedResults.BadRequest();
@@ -58,7 +58,8 @@ public class RoomController(ApplicationDbContext context) : ControllerBase
     public async Task<ActionResult<Guid>> Join(RoomIdModelR model)
     {
         var user = await _context.Profiles.FindAsync(AuthHelper.FindId(User));
-        var room = await _context.Rooms.FindAsync(model.RoomId);
+        var room = await _context.Rooms.Include(x => x.Users)
+            .FirstOrDefaultAsync(x => x.Id == model.RoomId);
         if (room == null || user == null)
             return BadRequest("Not found");
         if (room.IsPlaying || room.Users.Count >= MaxPlayerCount)

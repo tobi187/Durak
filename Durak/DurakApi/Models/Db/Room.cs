@@ -7,11 +7,12 @@ public class Room : DbBase
 {
     public string Name { get; set; }
     public bool IsPlaying { get; set; } = false;
+    public bool IsPrivate { get; set; } = false;
     public List<Profile> Users { get; set; }
     public GameRule? Rules { get; set; }
 
-    public bool CanPlay => Users.Count > 1;
-    public Profile Creator => Users[0];
+    public bool CanPlay() => Users?.Count > 1;
+    public Profile Creator() => Users[0];
 
     public bool IsJoinable()
     {

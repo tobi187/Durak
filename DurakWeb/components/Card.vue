@@ -2,8 +2,10 @@
   <div>
     <span class="text-9xl" @click="onCardClick">
       <img
+        height="300"
+        width="150"
         :src="cardPath"
-        class="hover:scale-125 game-card w-40"
+        class="hover:scale-125 game-card"
         :class="{ 'scale-125': meHighlighted }"
       />
     </span>

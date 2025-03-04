@@ -52,7 +52,7 @@ const onStart = async () => {
 
   const res = await get<RoomWithRules>({
     url: "/api/room/getRoom",
-    body: { roomId: userState.user?.roomId },
+    query: { roomId: userState.user?.roomId },
   })
 
   if (res.isErr()) {
@@ -60,7 +60,6 @@ const onStart = async () => {
   }
 
   room.value = res.value
-
   loading.value = false
 }
 
