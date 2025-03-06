@@ -15,7 +15,7 @@ public class RoomController(ApplicationDbContext context) : ControllerBase
 {
     readonly ApplicationDbContext _context = context;
     static readonly int MaxPlayerCount = 4;
-    
+
     [HttpGet("GetAll")]
     public async Task<IEnumerable<RoomInfoModelS>> GetAllRooms()
     {
@@ -23,7 +23,7 @@ public class RoomController(ApplicationDbContext context) : ControllerBase
             .Include(x => x.Users)
             .Where(x => x.Users.Count > 0 && !x.IsPlaying)
             .ToListAsync();
-        
+
         return result.Select(x => x.ToRoomInfo());
     }
 
@@ -33,9 +33,9 @@ public class RoomController(ApplicationDbContext context) : ControllerBase
         var result = await _context.Rooms
             .Include(x => x.Rules)
             .FirstOrDefaultAsync(x => x.Id == roomId);
-
         if (result is null)
             return TypedResults.BadRequest();
+        result.Rules ??= new GameRule();
         return TypedResults.Ok(result);
     }
 

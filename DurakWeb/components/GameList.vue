@@ -8,7 +8,7 @@
     </div>
     <UTable :rows="filteredRows" :columns="columns">
       <template #rules-data="{ row }">
-        <UButton @click="() => {}">View Rules</UButton>
+        <UButton @click="() => onViewRules(row.id)">View Rules</UButton>
       </template>
       <template #actions-data="{ row }">
         <UButton @click="() => onTryJoinRoom(row.id)">Join</UButton>
@@ -18,9 +18,11 @@
 </template>
 
 <script lang="ts" setup>
-import type { Room } from "~/types/api"
+import { PopupRules } from "#build/components"
+import { type Room } from "~/types/api"
 
 const { get, post } = useApi()
+const modal = useModal()
 
 interface RoomInfo {
   id?: string
@@ -57,7 +59,7 @@ const vals = ref<RoomInfo[]>([])
 
 const updateRooms = async () => {
   const res = await get<Room[]>({
-    url: "/api/room/getall",
+    url: "/api/room/getAll",
   })
   if (res.isErr()) {
     return
@@ -67,6 +69,14 @@ const updateRooms = async () => {
     name: el.name,
     amount: el.playerCount,
   }))
+}
+
+const onViewRules = async (rId: string) => {
+  if (!rId) return
+  modal.open(PopupRules, {
+    roomId: rId,
+
+  })
 }
 
 const onTryJoinRoom = async (id?: string) => {
