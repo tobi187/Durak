@@ -5,7 +5,7 @@
         <h3>{{ room?.name }}</h3>
       </template>
 
-      <div>
+      <div class="grid grid-cols-2 gap-4">
         <div>
           <UFormGroup label="Spieler Limit">
             <UInput readonly :model-value="room?.rules.playerLimit" />

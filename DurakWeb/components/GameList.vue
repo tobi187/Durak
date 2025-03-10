@@ -18,7 +18,7 @@
 </template>
 
 <script lang="ts" setup>
-import { PopupRules } from "#build/components"
+import { PopupRules } from "#components"
 import { type Room } from "~/types/api"
 
 const { get, post } = useApi()
@@ -75,7 +75,6 @@ const onViewRules = async (rId: string) => {
   if (!rId) return
   modal.open(PopupRules, {
     roomId: rId,
-
   })
 }
 

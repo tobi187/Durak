@@ -128,8 +128,8 @@ export const useGame = () => {
         // don't care probably
         console.log(ex)
       }
+      connection = null
     }
-    connection = null
   }
 
   const testGetRandomGameState = async () => {

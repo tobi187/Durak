@@ -47,7 +47,6 @@ public class DurakHub : Hub
         Log.Information("[StartGame] Send GameState: {@state}", state);
         await SendHands(gameState);
     }
-
     
     async Task SendHands(GameState state)
     {
@@ -161,11 +160,11 @@ public class DurakHub : Hub
         await SendHands(game);
     }
 
-    public override Task OnDisconnectedAsync(Exception? exception)
+    public override async Task OnDisconnectedAsync(Exception? exception)
     {
         Log.Information(exception, "Player disconnected from Hub");
         // TODO: DB Stuff
 
-        return base.OnDisconnectedAsync(exception);
+        await base.OnDisconnectedAsync(exception);
     }
 }
