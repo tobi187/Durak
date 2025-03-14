@@ -132,32 +132,6 @@ export const useGame = () => {
     }
   }
 
-  const testGetRandomGameState = async () => {
-    try {
-      const result = await $fetch<GameState>(
-        `${cfg.public.url}/api/testGame/GetRandomGameState`,
-      )
-      if (result) {
-        game.state = result
-      }
-    } catch (ex) {
-      console.log(ex)
-    }
-  }
-
-  const testGetRandomHand = async () => {
-    try {
-      const result = await $fetch<Me>(
-        `${cfg.public.url}/api/testGame/getRandomPlayerHand`,
-      )
-      if (result) {
-        game.me = result
-      }
-    } catch (ex) {
-      console.log("hand err", ex)
-    }
-  }
-
   return {
     initConnection,
     setCard,
@@ -170,8 +144,6 @@ export const useGame = () => {
     endRequested,
     cutConnection,
     game: readonly(game),
-    testGetRandomGameState,
-    testGetRandomHand,
     tempPlayerList,
   }
 }

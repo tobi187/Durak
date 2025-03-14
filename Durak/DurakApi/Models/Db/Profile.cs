@@ -11,10 +11,8 @@ public class Profile : DbBase
     public Guid? RoomId { get; set; }
     public Room? Room { get; set; }
 
-    public static Profile New(ClaimsPrincipal principal)
-    {
-        return new Profile
-        {
+    public static Profile New(ClaimsPrincipal principal) {
+        return new Profile {
             Id = AuthHelper.FindId(principal)!.Value,
             IsTempUser = !AuthHelper.IsLoggedIn(principal),
             Username = TempCringe.GetRandomName(),

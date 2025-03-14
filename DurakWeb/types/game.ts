@@ -34,6 +34,7 @@ type CardToBeat = {
 interface Player {
   id: string
   userName: string
+  place?: number
 }
 
 interface PlayerWithHandAmount extends Player {
@@ -55,10 +56,7 @@ type GameState = {
 }
 
 type Me = {
-  info: {
-    id: string
-    userName: string
-  }
+  info: Player
   hand: Card[]
 }
 

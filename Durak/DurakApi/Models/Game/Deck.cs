@@ -30,23 +30,21 @@ public record Card(CardSign Sign, CardValue Value);
 public class BoardCard(Card card, string from)
 {
     public readonly Card Card = card;
-    readonly string From = from;
+    public readonly string From = from;
     public PlayerCardBeatT? Beaten;
     public bool IsBeaten => Beaten != null;
 
-    public bool TrySchlag(PlayerCardBeatT other, CardSign trumpf)
-    {
+    public bool TrySchlag(PlayerCardBeatT other, CardSign trumpf) {
         if (!Schlag(other.Card, trumpf))
             return false;
         Beaten = other;
         return true;
     }
 
-    bool Schlag(Card other, CardSign trumpf)
-    {
+    bool Schlag(Card other, CardSign trumpf) {
         if (Beaten != null)
             return false;
-        if(other == null) return false;
+        if (other == null) return false;
         if (Card.Sign == other.Sign)
             return other.Value > Card.Value;
         return other.Sign == trumpf;
@@ -54,8 +52,7 @@ public class BoardCard(Card card, string from)
 
     public bool IsMe(Card card) => card == Card;
 
-    public PlayerCardT ToPlayerCardT()
-    {
+    public PlayerCardT ToPlayerCardT() {
         return new PlayerCardT(Card, From, Beaten);
     }
 }
@@ -65,10 +62,10 @@ public class Deck(List<Card> cards, Card trumpf)
     readonly List<Card> Cards = cards;
     public readonly Card TrumpfCard = trumpf;
     public int GetCount => Cards.Count;
-    readonly static CardValue lowest = CardValue.Six; 
+    public bool IsEmpty => Cards.Count == 0;
+    readonly static CardValue lowest = CardValue.Six;
 
-    public static Deck NewDeck()
-    {
+    public static Deck NewDeck() {
         var cardList = new List<Card>();
         foreach (var sign in Enum.GetValues<CardSign>())
             foreach (var val in Enum.GetValues<CardValue>())
@@ -80,8 +77,7 @@ public class Deck(List<Card> cards, Card trumpf)
         return new Deck(cardList, cardList.Last());
     }
 
-    public List<Card> GetCards(int amount)
-    {
+    public List<Card> GetCards(int amount) {
         // TODO: maybe better Data Structure
         var end = Math.Min(Cards.Count, amount);
         var cards = Cards[0..end];

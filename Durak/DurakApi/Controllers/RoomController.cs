@@ -17,8 +17,7 @@ public class RoomController(ApplicationDbContext context) : ControllerBase
     static readonly int MaxPlayerCount = 4;
 
     [HttpGet("GetAll")]
-    public async Task<IEnumerable<RoomInfoModelS>> GetAllRooms()
-    {
+    public async Task<IEnumerable<RoomInfoModelS>> GetAllRooms() {
         var result = await _context.Rooms
             .Include(x => x.Users)
             .Where(x => x.Users.Count > 0 && !x.IsPlaying)
@@ -28,8 +27,7 @@ public class RoomController(ApplicationDbContext context) : ControllerBase
     }
 
     [HttpGet("GetRoom")]
-    public async Task<IResult> GetRoomInfo(Guid roomId)
-    {
+    public async Task<IResult> GetRoomInfo(Guid roomId) {
         var result = await _context.Rooms
             .Include(x => x.Rules)
             .FirstOrDefaultAsync(x => x.Id == roomId);
@@ -40,8 +38,7 @@ public class RoomController(ApplicationDbContext context) : ControllerBase
     }
 
     [HttpPost("Create")]
-    public async Task<IResult> CreateRoom(RoomNameModelR model)
-    {
+    public async Task<IResult> CreateRoom(RoomNameModelR model) {
         var user = await _context.Profiles.FindAsync(AuthHelper.FindId(User));
         if (user == null)
             return TypedResults.Forbid();
@@ -55,8 +52,7 @@ public class RoomController(ApplicationDbContext context) : ControllerBase
     }
 
     [HttpPost("Join")]
-    public async Task<ActionResult<Guid>> Join(RoomIdModelR model)
-    {
+    public async Task<ActionResult<Guid>> Join(RoomIdModelR model) {
         var user = await _context.Profiles.FindAsync(AuthHelper.FindId(User));
         var room = await _context.Rooms.Include(x => x.Users)
             .FirstOrDefaultAsync(x => x.Id == model.RoomId);

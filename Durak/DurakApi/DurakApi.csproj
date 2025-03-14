@@ -34,4 +34,12 @@
     <Folder Include="Migrations\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EditorConfigFiles Remove="C:\Users\fischert\Desktop\projects\games\Durak\Durak\DurakApi\.editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="C:\Users\fischert\Desktop\projects\games\Durak\Durak\DurakApi\.editorconfig" />
+  </ItemGroup>
+
 </Project>

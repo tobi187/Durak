@@ -11,17 +11,14 @@ namespace DurakApi.Controllers;
 public class HomeController : ControllerBase
 {
     [HttpGet("/")]
-    public IActionResult Health()
-    {
+    public IActionResult Health() {
         return Ok(new { status = "alive" });
     }
 
     [HttpPost("/anon")]
-    public async Task<IResult> LoginAnonymous(bool useCookies = true)
-    {
-        try
-        {
-            Claim[] claims = [new (ClaimTypes.NameIdentifier, Guid.NewGuid().ToString())];
+    public async Task<IResult> LoginAnonymous(bool useCookies = true) {
+        try {
+            Claim[] claims = [new(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString())];
             var idenScheme = useCookies ? IdentityConstants.ApplicationScheme : IdentityConstants.BearerScheme;
             var iden = new ClaimsIdentity(claims, idenScheme);
             var principa = new ClaimsPrincipal(iden);
@@ -30,9 +27,7 @@ public class HomeController : ControllerBase
             props.ExpiresUtc = DateTimeOffset.UtcNow.AddDays(1);
             await HttpContext.SignInAsync(idenScheme, principa, props);
             return TypedResults.Empty;
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             Log.Error(ex, "Ex at Anon Login");
             return TypedResults.BadRequest();
         }

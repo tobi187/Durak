@@ -1,16 +1,20 @@
-﻿namespace DurakApi.Models.Game;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace DurakApi.Models.Game;
 
 public class GameState
 {
-    public Deck Deck { get; set; }
+    public Deck Deck { get; set; } = Deck.NewDeck();
     public List<Player> Players { get; set; }
-    public int turnPlayer = 0;
+    int startedTurnPlayer = 0;
+    int turnPlayer = 0;
     static readonly int handCardAmount = 6;
     readonly List<BoardCard> boardState = [];
     bool TakeRequested = false;
     List<string> EndRequested = [];
     bool IsBoardLocked => boardState.Any(x => x.IsBeaten);
     bool IsBoardFull => boardState.Count >= handCardAmount;
+    int ActiveCount => Players.Count(x => !x.IsFinished);
     Player GetTurnPlayer => Players[turnPlayer];
 
     public GameState(IEnumerable<Player> players) {
@@ -23,39 +27,51 @@ public class GameState
         Players = [player];
     }
 
-    public StateTransportT StartGame()
-    {
+    public StateTransportT StartGame() {
         var rnd = new Random();
         Deck = Deck.NewDeck();
         boardState.Clear();
-        foreach (var player in Players)
-        {
+        foreach (var player in Players) {
             player.DrawCards(Deck);
             player.RenewGameID();
         }
-        turnPlayer = rnd.Next(0, Players.Count);
+        TakeRequested = false;
+        EndRequested = [];
+        turnPlayer = rnd.Next(Players.Count);
+        startedTurnPlayer = turnPlayer;
         return BoardStateChanged();
     }
 
-    void NextPlayer()
-    {
-        if (++turnPlayer >= Players.Count)
-            turnPlayer = 0;
+    void NextPlayer() {
+        var max = 0;
+        do {
+            if (++turnPlayer >= Players.Count)
+                turnPlayer = 0;
+        } while (GetTurnPlayer.IsFinished && max++ <= Players.Count);
     }
 
-    bool TryGetPlayerAndValidate(Card card, string connId, out Player? player)
-    {
+    bool TryGetPlayerAndValidate(string connId, [NotNullWhen(true)] out Player? player) {
         player = Players.FirstOrDefault(x => x.ConnectionId == connId);
         if (player == null)
+            return false;
+        if (player.IsFinished)
+            return false;
+        return true;
+    }
+
+    bool TryGetPlayerAndValidate(string connId, Card card, [NotNullWhen(true)] out Player? player) {
+        player = Players.FirstOrDefault(x => x.ConnectionId == connId);
+        if (player == null)
+            return false;
+        if (player.IsFinished)
             return false;
         if (!player.HandCards.Contains(card))
             return false;
         return true;
     }
 
-    public StateTransportT? CanSchlag(Card card, Card cardToBeat, string connId)
-    {
-        if (!TryGetPlayerAndValidate(card, connId, out var player))
+    public StateTransportT? CanSchlag(Card card, Card cardToBeat, string connId) {
+        if (!TryGetPlayerAndValidate(connId, card, out var player))
             return null;
         if (GetTurnPlayer != player)
             return null;
@@ -72,9 +88,8 @@ public class GameState
         return BoardStateChanged();
     }
 
-    public StateTransportT? CanSchieb(Card card, string connId)
-    {
-        if (!TryGetPlayerAndValidate(card, connId, out var player))
+    public StateTransportT? CanSchieb(Card card, string connId) {
+        if (!TryGetPlayerAndValidate(connId, card, out var player))
             return null;
         if (GetTurnPlayer != player)
             return null;
@@ -88,16 +103,20 @@ public class GameState
         return BoardStateChanged();
     }
 
-    bool IsAround(int? num = null)
-    {
-        num ??= turnPlayer;
-        var higher = num + 1 == Players.Count ? 0 : num + 1; 
-        var lower = num == 0 ? Players.Count - 1 : num - 1;
-        return higher == turnPlayer || lower == turnPlayer; //|| turnPlayer == num; 
+    Player[] GetAround() {
+        List<Player> around = [];
+        var num = turnPlayer;
+        while (around.Count == 0 && ++num % Players.Count != turnPlayer)
+            if (!Players[num].IsFinished)
+                around.Add(Players[num]);
+        num = turnPlayer;
+        while (around.Count == 1 && (--num + Players.Count) % Players.Count != turnPlayer)
+            if (!Players[num].IsFinished && around.FirstOrDefault() != Players[num])
+                around.Add(Players[num]);
+        return [.. around];
     }
 
-    bool IsOnBoard(Card card)
-    {
+    bool IsOnBoard(Card card) {
         if (boardState.Count == 0)
             return false;
         if (boardState.Any(x => x.Card.Value == card.Value))
@@ -107,64 +126,53 @@ public class GameState
         return false;
     }
 
-    public StateTransportT? AddCard(Card card, string connId)
-    {
-        var playerIndex = Players.FindIndex(x => x.ConnectionId == connId);
-        if (playerIndex == -1)
+    public StateTransportT? AddCard(Card card, string connId) {
+        if (!TryGetPlayerAndValidate(connId, card, out var player))
             return null;
-        if (IsBoardFull)
+        if (IsBoardFull || GetTurnPlayer.HandCards.Count >= boardState.Count)
             return null;
-        if (!IsAround(playerIndex))
-            return null;
-        if (!Players[playerIndex].HandCards.Contains(card))
+        var around = GetAround();
+        if (!around.Contains(player))
             return null;
         if (!IsOnBoard(card))
             return null;
-        boardState.Add(new(card, Players[playerIndex].GameId));
-        Players[playerIndex].RemoveCard(card);
+        boardState.Add(new(card, player.GameId));
+        player.RemoveCard(card);
         return BoardStateChanged();
     }
 
-    public StateTransportT? OnEndRequest(string connId)
-    {
-        var playerIndex = Players.FindIndex(x => x.ConnectionId == connId);
-        if (playerIndex == -1)
+    public StateTransportT? OnEndRequest(string connId) {
+        if (!TryGetPlayerAndValidate(connId, out var player))
             return null;
-        if (!IsAround(playerIndex))
+        var around = GetAround();
+        if (!around.Contains(player))
             return null;
         if (EndRequested.Contains(connId))
             return null;
         EndRequested.Add(connId);
-        if (EndRequested.Count < Math.Min(1, Players.Count - 1))
+        if (EndRequested.Count < Math.Min(ActiveCount - 1, 2)) // check if this ok
             return null;
         if (TakeRequested)
             return TakeCards(GetTurnPlayer.ConnectionId);
         if (!boardState.All(x => x.IsBeaten))
             return null;
-        boardState.Clear();
-        DrawCards();
+        OnNextTurn();
         return BoardStateChanged();
     }
 
-    public bool? RequestTakeCards(string connId)
-    {
-        var player = Players.FirstOrDefault(x => x.ConnectionId == connId);
-        if (player == null)
+    public bool? RequestTakeCards(string connId) {
+        if (!TryGetPlayerAndValidate(connId, out var player))
             return null;
         if (player != GetTurnPlayer || boardState.Count == 0)
             return null;
         TakeRequested = true;
         if (IsBoardFull)
             return true;
-        Player[] aroundPlayers = [
-            Players[turnPlayer == 0 ? Players.Count - 1 : turnPlayer - 1],
-            Players[turnPlayer == Players.Count - 1 ? 0 : turnPlayer + 1]];
-        var actionPlayers = aroundPlayers.Where(x => x.HasPlayableCards(boardState));
+        var actionPlayers = GetAround().Where(x => x.HasPlayableCards(boardState));
         return actionPlayers.Any();
     }
 
-    public StateTransportT? TakeCards(string connId)
-    {
+    public StateTransportT? TakeCards(string connId) {
         if (!TakeRequested)
             return null;
         var player = Players.FirstOrDefault(x => x.ConnectionId == connId);
@@ -173,23 +181,55 @@ public class GameState
         TakeRequested = false;
         var nCards = boardState.Select(x => x.Card);
         player.HandCards.AddRange(nCards);
-        NextPlayer();
-        boardState.Clear();
-        DrawCards();
+        OnNextTurn();
         return BoardStateChanged();
     }
 
-    void DrawCards()
-    {
-        // TODO: change draw order; remember starting player
-        for (int i = turnPlayer + 1; i < Players.Count; i++)
-            Players[i].DrawCards(Deck);
-        for (int i = 0; i <= turnPlayer; i++)
-            Players[i].DrawCards(Deck);
+    void OnNextTurn() {
+        DrawCards();
+        CheckWin();
+        NextPlayer();
+        startedTurnPlayer = turnPlayer;
+        boardState.Clear();
     }
 
-    StateTransportT BoardStateChanged()
-    {
+    void CheckWin() {
+        if (!Deck.IsEmpty)
+            return;
+        var opts = Players.Where(x => x.Place != null
+            && x.HandCards.Count == 0).ToArray();
+        if (opts.Length == 0)
+            return;
+        var lMax = Players.Select(x => x.Place).Max();
+        var boardOrder = boardState.Select(x => x.From).Distinct().ToArray();
+        var orderedByWinner = opts.OrderBy(x => Array.IndexOf(boardOrder, x.GameId));
+        foreach (var winner in orderedByWinner)
+            if (winner != GetTurnPlayer)
+                winner.Place = ++lMax;
+        if (GetTurnPlayer.HandCards.Count == 0)
+            GetTurnPlayer.Place = ++lMax;
+        var remaining = Players.Where(x => !x.IsFinished);
+        if (remaining.Count() == 1)
+            remaining.First().Place = ++lMax;
+    }
+
+    void DrawCards() {
+        // startplayer zieht erst, dann gehts im Kreis weiter
+        // falls geschlagen wurde zieht der Spieler, welcher geschlagen hat als letztes
+        var start = startedTurnPlayer == turnPlayer ? (turnPlayer + 1) % Players.Count : startedTurnPlayer;
+        var hasBeaten = boardState.All(x => x.IsBeaten);
+        bool skipSchlagPlayer(int n) => !(hasBeaten && n == turnPlayer);
+        for (int i = start; i < Players.Count; i++)
+            if (!skipSchlagPlayer(i))
+                Players[i].DrawCards(Deck);
+        for (int i = 0; i < start; i++)
+            if (!skipSchlagPlayer(i))
+                Players[i].DrawCards(Deck);
+        if (hasBeaten)
+            GetTurnPlayer.DrawCards(Deck);
+    }
+
+    StateTransportT BoardStateChanged() {
         EndRequested = []; // TODO: check if this is ok ?
         return new StateTransportT(
             new BoardT(
@@ -206,13 +246,23 @@ public class GameState
         );
     }
 
-    public void RemovePlayer(string connectionId)
-    {
-        return;
+    public StateTransportT? RemovePlayer(string connectionId) {
+        // how to act on player leave ?
+        // assumption: playercards get removed
+        if (!TryGetPlayerAndValidate(connectionId, out var player))
+            return null;
+        Players.Remove(player);
+        if (ActiveCount < 2) {
+            // finish up
+        } else if (GetTurnPlayer == player) {
+            OnNextTurn();
+        } else {
+            boardState.RemoveAll(x => x.From == player.GameId);
+        }
+        return BoardStateChanged();
     }
 
-    public IEnumerable<PlayerT> AddPlayer(string connId, string? userName)
-    {
+    public IEnumerable<PlayerT> AddPlayer(string connId, string? userName) {
         var player = new Player(connId);
         player.Username = userName;
         Players.Add(player);

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <span class="text-9xl" @click="onCardClick">
+    <span class="p-3" @click="onCardClick">
       <img
         height="300"
         width="150"

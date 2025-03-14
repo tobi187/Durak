@@ -1,9 +1,5 @@
 <template>
   <div class="h-[85vdh]">
-    <!-- <div class="w-full flex p-3 px-20 border justify-evenly">
-      <UButton @click="testGetRandomGameState">Gen State</UButton>
-      <UButton @click="testGetRandomHand">Gen Hand</UButton>
-    </div> -->
     <div class="w-full flex justify-center">
       <div class="font-bold text-lg">
         {{ statusMessage }}
@@ -43,14 +39,15 @@
 const { game } = useGame()
 
 const timeLeft = ref(11)
+const statusMessage = ref("Loading...")
 
 watch(
   () => game.state?.board.takeRequested,
   (isTakeRequested) => {
-    if (isTakeRequested) {
+    if (isTakeRequested && timeLeft.value === 11) {
       const timer = setInterval(() => {
         if (timeLeft.value <= 0) {
-          timeLeft.value = 14
+          timeLeft.value = 11
           clearInterval(timer)
         }
         timeLeft.value -= 1
@@ -78,23 +75,36 @@ const getOpp = (i: number) => {
   return ops.value[i].id
 }
 
-const statusMessage = computed(() => {
-  if (!game.state) {
-    return "Loading..."
-  }
+watchEffect(() => {
   const turnPlayer = game.state?.players.turnPlayer.userName
   const isLocked = game.state?.board.locked
   const takeReq = game.state?.board.takeRequested
-  const message = `Current Player: ${turnPlayer}`
+  let message = `Current Player: ${turnPlayer}`
   if (isLocked) {
-    return message + ` is am Schlagen`
+    message += ` is am Schlagen`
+  } else if (takeReq) {
+    message += ` will nehmen. Du hast ${timeLeft.value} Sekunden restliche Karten zu legen`
   }
-  if (takeReq) {
-    return (
-      message +
-      ` will nehmen. Du hast ${timeLeft.value} Sekunden restliche Karten zu legen`
-    )
-  }
-  return message
+  statusMessage.value = message
 })
+
+// const statusMessage = computed(() => {
+// if (!game.state) {
+//   return "Loading..."
+// }
+// const turnPlayer = game.state?.players.turnPlayer.userName
+// const isLocked = game.state?.board.locked
+// const takeReq = game.state?.board.takeRequested
+// const message = `Current Player: ${turnPlayer}`
+// if (isLocked) {
+//   return message + ` is am Schlagen`
+// }
+// if (takeReq) {
+//   return (
+//     message +
+//     ` will nehmen. Du hast ${timeLeft.value} Sekunden restliche Karten zu legen`
+//   )
+// }
+// return message
+// })
 </script>

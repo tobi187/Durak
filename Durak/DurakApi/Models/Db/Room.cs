@@ -14,17 +14,14 @@ public class Room : DbBase
     public bool CanPlay() => Users?.Count > 1;
     public Profile Creator() => Users[0];
 
-    public bool IsJoinable()
-    {
+    public bool IsJoinable() {
         var ct = Users?.Count ?? 1;
         var playerLimit = Rules?.PlayerLimit ?? 4;
         return ct < playerLimit && !IsPlaying && ct > 0;
     }
 
-    public static Room New(Profile user, string? name)
-    {
-        return new Room
-        {
+    public static Room New(Profile user, string? name) {
+        return new Room {
             Name = name ?? Guid.NewGuid().ToString(),
             Users = [user],
             CreatedAt = DateTime.Now,
