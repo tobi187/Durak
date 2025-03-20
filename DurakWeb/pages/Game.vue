@@ -1,5 +1,5 @@
 <template>
-  <div class="h-[85vdh]">
+  <div class="h-[85lvh]">
     <div class="w-full flex justify-center">
       <div class="font-bold text-lg">
         {{ statusMessage }}

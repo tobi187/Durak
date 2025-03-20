@@ -85,7 +85,9 @@ try {
     app.MapIdentityApi<IdentityUser>();
 
     app.MapControllers();
-    app.MapHub<DurakHub>("/durak");
+    app.MapHub<DurakHub>("/durak", opts => {
+        opts.AllowStatefulReconnects = !false;
+    });
 
     app.Run();
 } catch (Exception ex) {

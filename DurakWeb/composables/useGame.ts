@@ -76,6 +76,7 @@ export const useGame = () => {
     connection = new signalR.HubConnectionBuilder()
       .withUrl(`${cfg.public.url}/durak`)
       .withAutomaticReconnect()
+      .withStatefulReconnect()
       .build()
 
     try {

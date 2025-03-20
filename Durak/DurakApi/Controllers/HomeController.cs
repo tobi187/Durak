@@ -3,6 +3,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication;
+using DotNetEnv;
 
 namespace DurakApi.Controllers;
 
@@ -12,7 +13,9 @@ public class HomeController : ControllerBase
 {
     [HttpGet("/")]
     public IActionResult Health() {
-        return Ok(new { status = "alive" });
+        if (Env.GetString("ASPNETCORE_ENVIRONMENT", "Production") == "Development")
+            return Redirect("/swagger");
+        return Ok(new { status = "(barely) alive" });
     }
 
     [HttpPost("/anon")]
@@ -23,7 +26,7 @@ public class HomeController : ControllerBase
             var iden = new ClaimsIdentity(claims, idenScheme);
             var principa = new ClaimsPrincipal(iden);
             var props = new AuthenticationProperties();
-            props.IsPersistent = false;
+            props.IsPersistent = !false; // session cookie i sink <- maybe change this on prod ?
             props.ExpiresUtc = DateTimeOffset.UtcNow.AddDays(1);
             await HttpContext.SignInAsync(idenScheme, principa, props);
             return TypedResults.Empty;
