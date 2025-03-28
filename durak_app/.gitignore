@@ -46,3 +46,6 @@ app.*.map.json
 
 # custom
 /assets/cfg/config.json
+
+*.env
+
