@@ -1,9 +1,9 @@
 ﻿using Serilog;
+using DotNetEnv;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication;
-using DotNetEnv;
 
 namespace DurakApi.Controllers;
 
@@ -24,11 +24,11 @@ public class HomeController : ControllerBase
             Claim[] claims = [new(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString())];
             var idenScheme = useCookies ? IdentityConstants.ApplicationScheme : IdentityConstants.BearerScheme;
             var iden = new ClaimsIdentity(claims, idenScheme);
-            var principa = new ClaimsPrincipal(iden);
+            var principal = new ClaimsPrincipal(iden);
             var props = new AuthenticationProperties();
             props.IsPersistent = !false; // session cookie i sink <- maybe change this on prod ?
             props.ExpiresUtc = DateTimeOffset.UtcNow.AddDays(1);
-            await HttpContext.SignInAsync(idenScheme, principa, props);
+            await HttpContext.SignInAsync(idenScheme, principal, props);
             return TypedResults.Empty;
         } catch (Exception ex) {
             Log.Error(ex, "Ex at Anon Login");

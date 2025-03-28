@@ -1,6 +1,6 @@
 <template>
-  <div class="flex">
-    <div class="flex align-middle p-3 h-1/2">
+  <div class="flex justify-center">
+    <div class="flex align-baseline p-3 h-1/2">
       <div v-if="game.me?.info.id === game.state?.players.turnPlayer.id">
         <UButton @click="onTakeCardClick">Nehmen</UButton>
       </div>

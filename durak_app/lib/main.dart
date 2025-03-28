@@ -1,19 +1,12 @@
-import 'package:durak_app/helpers/config_keys.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
-import 'package:global_configuration/global_configuration.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'routes.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await GlobalConfiguration().loadFromAsset('config');
-
-  await Supabase.initialize(
-    url: ConfigKeys.supabaseUrl,
-    anonKey: ConfigKeys.supabaseKey,
-  );
+  await dotenv.load(fileName: ".env");
 
   runApp(const MyApp());
 }

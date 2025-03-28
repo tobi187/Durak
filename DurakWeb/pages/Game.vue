@@ -1,12 +1,12 @@
 <template>
-  <div class="h-[85lvh]">
+  <div class="lg:h-[85lvh]">
     <div class="w-full flex justify-center">
       <div class="font-bold text-lg">
         {{ statusMessage }}
       </div>
     </div>
-    <div class="grid grid-cols-4 grid-rows-4">
-      <div class="col-span-4 flex justify-center">
+    <div class="grid grid-cols-8 grid-rows-4">
+      <div class="col-span-6 col-start-2 flex justify-center">
         <OpponentHand v-if="isOppThere(0)" :playerId="getOpp(0)" />
       </div>
       <div class="col-start-1 row-start-1 row-span-4 flex align-middle">
@@ -16,11 +16,11 @@
           :flipIt="true"
         />
       </div>
-      <div class="col-span-2 row-span-2">
+      <div class="col-span-6 row-span-2">
         <Board />
       </div>
       <div
-        class="col-start-4 row-span-4 row-start-1 align-middle flex justify-end"
+        class="col-start-8 row-span-4 row-start-1 align-middle flex justify-end"
       >
         <OpponentHand
           v-if="isOppThere(2)"
@@ -28,7 +28,7 @@
           :flipIt="true"
         />
       </div>
-      <div class="col-span-4">
+      <div class="col-span-8">
         <Hand />
       </div>
     </div>

@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class LoginScreen extends StatelessWidget {
   LoginScreen({super.key});
-  final supabase = Supabase.instance.client;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final mailText = TextEditingController();
   final pwText = TextEditingController();

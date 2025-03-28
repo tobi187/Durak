@@ -17,7 +17,7 @@ const checkEmilPw = () => {
     errorMessage.value = "Check Email dikker"
     return false
   }
-  if (pw.value.length < 6) {
+  if (pw.value.length < 1) {
     errorMessage.value = "Mach Pw besser"
     return false
   }

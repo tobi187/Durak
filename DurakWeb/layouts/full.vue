@@ -3,7 +3,7 @@
     <div class="p-1 px-8 border-b border-gray-200 dark:border-gray-800">
       <UHorizontalNavigation :links="links" />
     </div>
-    <div class="container mx-auto px-20">
+    <div>
       <slot />
     </div>
   </div>

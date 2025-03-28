@@ -6,6 +6,8 @@ using Serilog.Events;
 using DurakApi.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.BearerToken;
 
 Env.TraversePath().Load();
 
@@ -39,8 +41,23 @@ try {
 
     builder.Services.AddIdentityApiEndpoints<IdentityUser>(opts => {
         opts.User.RequireUniqueEmail = true;
+        // TODO: change this before live
+        opts.Password.RequiredLength = 1;
+        opts.Password.RequireNonAlphanumeric = false;
+        opts.Password.RequireDigit = false;
+        opts.Password.RequireUppercase = false;
+        opts.Password.RequireLowercase = false;
     })
     .AddEntityFrameworkStores<ApplicationDbContext>();
+
+    builder.Services.Configure<CookieAuthenticationOptions>(opts => {
+        opts.ExpireTimeSpan = TimeSpan.FromDays(7 * 4 * 6);
+        opts.Cookie.Expiration = TimeSpan.FromDays(7 * 4 * 6);
+    });
+
+    builder.Services.Configure<BearerTokenOptions>(opts => {
+
+     });
 
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();

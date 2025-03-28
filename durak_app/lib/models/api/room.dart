@@ -19,5 +19,6 @@ class Room {
 
   factory Room.fromJson(Map<String, dynamic> json) => _$RoomFromJson(json);
 
-  Map<String, dynamic> toJson() => _$RoomToJson(this);
+  // Map<String, dynamic> toJson() => _$RoomToJson(this);
+  Map<String, dynamic> toJson() => { "id": "a"  };
 }
