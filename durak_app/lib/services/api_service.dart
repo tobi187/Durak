@@ -22,11 +22,9 @@ class ApiResult {
   factory ApiResult.fromHttpResult(http.Response resp) {
     final success = resp.statusCode < 300;
     Map<String, dynamic> json = {};
-    // or try catch maybe
     try {
       json = jsonDecode(resp.body);
     } catch (_) {} // just return empty map on fail
-
     return ApiResult(statusCode: resp.statusCode, success: success, body: json);
   }
 
@@ -38,16 +36,29 @@ class ApiResult {
 class ApiService {
   final String backendUrl = Config.backendUrl;
   final logger = Logger('ApiService');
+  final storage = FlutterSecureStorage();
   Bearer? _bearer;
 
-  Future<bool> _authenticate() async {
-    final url = _getUri('/anon');
-    final res = await _call(url, "post");
+  Future<bool> authenticate(String url, {Object? body}) async {
+    final gUrl = _getUri(url, query: {'useCookies': false});
+    final res = await _call(gUrl, "post", body: body);
     if (!res.hasValue) {
       return false;
     }
     _bearer = Bearer.fromJson(res.body);
+    await storage.write(key: 'refresh-key', value: _bearer!.refreshToken);
     return true;
+  }
+
+  Future<bool> _refreshBearer({String? key}) async {
+    final url = _getUri('/refresh');
+    key ??= _bearer?.refreshToken;
+    final res = await _call(url, 'post', body: {'refreshKey': key});
+    if (res.success) {
+      _bearer = Bearer.fromJson(res.body);
+      return true;
+    }
+    return false;
   }
 
   Future<bool> _authenticateIfNeeded() async {
@@ -55,13 +66,15 @@ class ApiService {
       if (_bearer!.isValid) {
         return true;
       } else {
-        return await _authenticate();
+        return await _refreshBearer();
       }
     } else {
-      final storage = FlutterSecureStorage();
-      final refreshKey = await storage.read(key: "");
+      final refreshKey = await storage.read(key: "refresh-key");
+      if (refreshKey != null) {
+        return await _refreshBearer(key: refreshKey);
+      }
     }
-    return await _authenticate();
+    return false;
   }
 
   Future<ApiResult> get(String url, {Map<String, dynamic>? query}) async {
@@ -102,6 +115,9 @@ class ApiService {
       }
       var resStream = await req.send();
       var res = await http.Response.fromStream(resStream);
+      if (res.statusCode >= 300) {
+        _logApiFail(res, req.body);
+      }
 
       return ApiResult.fromHttpResult(res);
     } catch (e, s) {
@@ -115,5 +131,23 @@ class ApiService {
       return Uri.https(backendUrl, path, query);
     }
     return Uri.http(backendUrl, path, query);
+  }
+
+  void _logApiFail(http.Response resp, String? body) {
+    var log = [
+      "Api Call to ${resp.request?.url ?? '?'} failed",
+      "StatusCode: ${resp.statusCode}",
+      "Reason: ${resp.reasonPhrase}",
+    ];
+
+    if (resp.body.isNotEmpty) {
+      log.add("Body: ${resp.body}");
+    }
+
+    if (body != null && body.isNotEmpty) {
+      log.add("Request Body: $body");
+    }
+
+    logger.warning(log.join("\n"));
   }
 }

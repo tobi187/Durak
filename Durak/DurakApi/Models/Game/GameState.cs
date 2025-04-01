@@ -44,6 +44,10 @@ public class GameState
 
     void NextPlayer() {
         var max = 0;
+        // wenn alles geschlagen ist darf der Spieler der geschlagen hat anfangen
+        if (boardState.All(x => x.IsBeaten) && !GetTurnPlayer.IsFinished) {
+            return;
+        }
         do {
             if (++turnPlayer >= Players.Count)
                 turnPlayer = 0;
@@ -88,6 +92,19 @@ public class GameState
         return BoardStateChanged();
     }
 
+    // use this in nextplayer
+    int GetNextPlayer() {
+        var max = 0;
+        var curr = (turnPlayer + 1) % Players.Count;
+        do {
+            if (++curr >= Players.Count)
+                curr = 0;
+            // TODO: wenn max erreicht return was anderes vmtlch
+        } while (Players[curr].IsFinished && max++ <= Players.Count);
+        return curr;
+    }
+
+    // check handkarten anderer spieler 
     public StateTransportT? CanSchieb(Card card, string connId) {
         if (!TryGetPlayerAndValidate(connId, card, out var player))
             return null;
@@ -97,6 +114,9 @@ public class GameState
             return null;
         if (!boardState.All(x => x.Card.Value == card.Value))
             return null;
+        var next = GetNextPlayer();
+        if (Players[next].HandCards.Count <= boardState.Count(x => !x.IsBeaten))
+            return null;
         boardState.Add(new(card, player.GameId));
         NextPlayer();
         player.RemoveCard(card);
@@ -105,14 +125,28 @@ public class GameState
 
     Player[] GetAround() {
         List<Player> around = [];
-        var num = turnPlayer;
-        while (around.Count == 0 && ++num % Players.Count != turnPlayer)
+        int num = turnPlayer;
+
+        // Search right (forward)
+        while (around.Count == 0) {
+            num = (num + 1) % Players.Count; // Ensure wrapping
+            if (num == turnPlayer) break; // Stop if we complete a full loop
+
             if (!Players[num].IsFinished)
                 around.Add(Players[num]);
+        }
+
         num = turnPlayer;
-        while (around.Count == 1 && (--num + Players.Count) % Players.Count != turnPlayer)
-            if (!Players[num].IsFinished && around.FirstOrDefault() != Players[num])
+
+        // Search left (backward)
+        while (around.Count == 1) {
+            num = (num - 1 + Players.Count) % Players.Count; // Ensure wrapping
+            if (num == turnPlayer) break; // Stop if we complete a full loop
+
+            if (!Players[num].IsFinished && around.First() != Players[num])
                 around.Add(Players[num]);
+        }
+
         return [.. around];
     }
 
@@ -129,7 +163,8 @@ public class GameState
     public StateTransportT? AddCard(Card card, string connId) {
         if (!TryGetPlayerAndValidate(connId, card, out var player))
             return null;
-        if (IsBoardFull || GetTurnPlayer.HandCards.Count >= boardState.Count)
+        var unbeaten = boardState.Count(x => !x.IsBeaten);
+        if (IsBoardFull || GetTurnPlayer.HandCards.Count <= unbeaten)
             return null;
         var around = GetAround();
         if (!around.Contains(player))
@@ -179,8 +214,12 @@ public class GameState
         if (player == null || player != GetTurnPlayer)
             return null;
         TakeRequested = false;
-        var nCards = boardState.Select(x => x.Card);
-        player.HandCards.AddRange(nCards);
+        foreach (var card in boardState) {
+            player.HandCards.Add(card.Card);
+            if (card.IsBeaten) {
+                player.HandCards.Add(card.Beaten!.Card);
+            }
+        }
         OnNextTurn();
         return BoardStateChanged();
     }
@@ -217,16 +256,14 @@ public class GameState
         // startplayer zieht erst, dann gehts im Kreis weiter
         // falls geschlagen wurde zieht der Spieler, welcher geschlagen hat als letztes
         var start = startedTurnPlayer == turnPlayer ? (turnPlayer + 1) % Players.Count : startedTurnPlayer;
-        var hasBeaten = boardState.All(x => x.IsBeaten);
-        bool skipSchlagPlayer(int n) => !(hasBeaten && n == turnPlayer);
         for (int i = start; i < Players.Count; i++)
-            if (!skipSchlagPlayer(i))
+            if (i != turnPlayer)
                 Players[i].DrawCards(Deck);
         for (int i = 0; i < start; i++)
-            if (!skipSchlagPlayer(i))
+            if (i != turnPlayer)
                 Players[i].DrawCards(Deck);
-        if (hasBeaten)
-            GetTurnPlayer.DrawCards(Deck);
+        
+        GetTurnPlayer.DrawCards(Deck);
     }
 
     StateTransportT BoardStateChanged() {

@@ -72,6 +72,13 @@ export const useGame = () => {
     })
   }
 
+  const tryReconnect = async () => {
+    if (connection == null) {
+      await initConnection()
+    }
+    
+  }
+
   const initConnection = async () => {
     connection = new signalR.HubConnectionBuilder()
       .withUrl(`${cfg.public.url}/durak`)

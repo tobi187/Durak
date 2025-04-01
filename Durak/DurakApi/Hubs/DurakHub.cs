@@ -130,6 +130,10 @@ public class DurakHub : Hub
         await SendHands(game);
     }
 
+    //public async Task SendCurrentState(HubBaseModel model) {
+
+    //}
+
     public async Task OnTakeCardsRequested(HubBaseModel model)
     {
         Log.Information("[OnTakeCardsRequested] Recv HubBaseModel {@model}", model);

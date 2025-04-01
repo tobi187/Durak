@@ -1,5 +1,5 @@
 <template>
-  <div class="lg:h-[85lvh]">
+  <div class="lg:h-[80lvh]">
     <div class="w-full flex justify-center">
       <div class="font-bold text-lg">
         {{ statusMessage }}
@@ -86,6 +86,13 @@ watchEffect(() => {
     message += ` will nehmen. Du hast ${timeLeft.value} Sekunden restliche Karten zu legen`
   }
   statusMessage.value = message
+})
+
+watchEffect(async () => {
+  const players = game.state?.players.players
+  if (players?.every((p) => p.place)) {
+    await navigateTo("/room")
+  }
 })
 
 // const statusMessage = computed(() => {

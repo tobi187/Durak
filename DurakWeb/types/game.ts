@@ -7,7 +7,7 @@ enum CardValue {
   Bube = 11,
   Queen = 12,
   King = 13,
-  Ace = 1,
+  Ace = 14,
 }
 
 enum CardSign {

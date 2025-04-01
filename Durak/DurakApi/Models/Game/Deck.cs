@@ -22,7 +22,7 @@ public enum CardValue
     Bube = 11,
     Queen = 12,
     King = 13,
-    Ace = 1,
+    Ace = 14,
 }
 
 public record Card(CardSign Sign, CardValue Value);

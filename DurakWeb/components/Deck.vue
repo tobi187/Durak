@@ -12,16 +12,25 @@
         <span class="border p-1 bg-white text-black">25 Karten</span>
       </div>
     </div> -->
-    <div>
-      <img height="100" width="100" class="" :src="cardPath" />
+    <div class="relative p-5 m-5">
       <img
+        height="100"
+        width="100"
+        class="absolute"
+        :class="{ 'opacity-50': deckCount <= 0 }"
+        :src="cardPath"
+      />
+      <img
+        v-if="deckCount > 0"
         height="100"
         width="100"
         class="ml-7 mt-7"
         src="/card_back/blue2.svg"
       />
       <div class="">
-        <span class="border p-1 bg-white text-black">25 Karten</span>
+        <span class="border p-1 bg-white text-black"
+          >{{ deckCount }} Karten</span
+        >
       </div>
     </div>
   </div>
@@ -29,8 +38,11 @@
 
 <script setup lang="ts">
 import { CardSign, type Card } from "~/types/game"
+const { game } = useGame()
 
 const props = defineProps<Card>()
+
+const deckCount = computed(() => game?.state?.board.deckCount ?? 52 - 4 * 6)
 
 const cardName =
   `${CardSign[props.sign]}_${props.value}.svg`.toLocaleLowerCase()
